@@ -27,11 +27,11 @@ void DOYOUKNOW_CLASS::ptr_const(void)
 		int8_t const * int8_ptr_a = nullptr;
 
 		int8_ptr_a = &int8_a;
-		printf("int8_ptr_a addr  : %lld\n", (int64_t)int8_ptr_a);
+		printf("int8_ptr_a ptr  : %lld\n", (int64_t)int8_ptr_a);
 		printf("int8_ptr_a value : %lld\n", (int64_t)(*int8_ptr_a));
 
 		int8_ptr_a = &int8_aa;
-		printf("int8_ptr_a addr  : %lld\n", (int64_t)int8_ptr_a);
+		printf("int8_ptr_a ptr  : %lld\n", (int64_t)int8_ptr_a);
 		printf("int8_ptr_a value : %lld\n", (int64_t)(*int8_ptr_a));
 
 		// Can't
@@ -47,11 +47,11 @@ void DOYOUKNOW_CLASS::ptr_const(void)
 
 		// Can't
 		//int8_ptr_b = &int8_bb;
-		printf("int8_ptr_b addr  : %lld\n", (int64_t)int8_ptr_b);
+		printf("int8_ptr_b ptr  : %lld\n", (int64_t)int8_ptr_b);
 		printf("int8_ptr_b value : %lld\n", (int64_t)(*int8_ptr_b));
 
 		*int8_ptr_b = int8_b;
-		printf("int8_ptr_b addr  : %lld\n", (int64_t)int8_ptr_b);
+		printf("int8_ptr_b ptr  : %lld\n", (int64_t)int8_ptr_b);
 		printf("int8_ptr_b value : %lld\n", (int64_t)(*int8_ptr_b));
 		///////////////////////////////////////////////////////////////
 
