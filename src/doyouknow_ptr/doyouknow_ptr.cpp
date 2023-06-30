@@ -37,7 +37,7 @@ void DOYOUKNOW_CLASS::ptr_const(void)
 		// Can't
 		//*int8_ptr_a = int8_aa;
 		///////////////////////////////////////////////////////////////
-
+		printf("\n");
 		///////////////////////////////////////////////////////////////
 		int8_t int8_b = 3U;
 		int8_t int8_bb = 4U;
@@ -54,7 +54,7 @@ void DOYOUKNOW_CLASS::ptr_const(void)
 		printf("int8_ptr_b ptr  : %lld\n", (int64_t)int8_ptr_b);
 		printf("int8_ptr_b value : %lld\n", (int64_t)(*int8_ptr_b));
 		///////////////////////////////////////////////////////////////
-
+		printf("\n");
 		///////////////////////////////////////////////////////////////
 		int8_t int8_c = 5U;
 		int8_t int8_cc = 6U;
