@@ -8,5 +8,5 @@ class DOYOUKNOW_CLASS
 		~DOYOUKNOW_CLASS(void);
 
 	public:
-		void ptr_test(void);
+		void ptr_const(void);
 };
