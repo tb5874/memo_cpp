@@ -14,9 +14,15 @@ void DOYOUKNOW_CLASS::ptr_const(void)
 {
 	try {
 		///////////////////////////////////////////////////////////////
+		// ((int8_t) const)*
+		// (int8_t*) const
+		// (((int8_t*) const)*) const
+		///////////////////////////////////////////////////////////////
+
+		///////////////////////////////////////////////////////////////
 		int8_t int8_a = 1U;
 		int8_t int8_aa = 2U;
-		// change value : X (int8_t const)
+		// change value : X
 		// change address : O
 		int8_t const * int8_ptr_a = nullptr;
 
@@ -36,7 +42,7 @@ void DOYOUKNOW_CLASS::ptr_const(void)
 		int8_t int8_b = 3U;
 		int8_t int8_bb = 4U;
 		// change value : O
-		// change address : X (int8_t* const)
+		// change address : X
 		int8_t* const int8_ptr_b = &int8_bb;
 
 		// Can't
@@ -54,8 +60,8 @@ void DOYOUKNOW_CLASS::ptr_const(void)
 		int8_t int8_cc = 6U;
 		int8_t* int8_ccc = &int8_cc;
 		// change value : O
-		// change address : X (int8_t* const)
-		int8_t* const* const int8_ptr_c = &int8_ccc;
+		// change address : X
+		int8_t* const * const int8_ptr_c = &int8_ccc;
 
 		// Can't
 		//(int8_ptr_c) = &int8_ccc;
