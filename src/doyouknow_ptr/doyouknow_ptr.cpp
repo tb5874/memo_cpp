@@ -14,66 +14,110 @@ void DOYOUKNOW_CLASS::ptr_const(void)
 {
 	try {
 		///////////////////////////////////////////////////////////////
-		// ((int8_t) const)*
-		// (int8_t*) const
-		// (((int8_t*) const)*) const
-		///////////////////////////////////////////////////////////////
+
+		int8_t					a_i8 = 0U;
+		int8_t const*			a_i8_ptr = nullptr;
+		int8_t					aa_i8 = 0U;
+
+		int8_t					b_i8 = 0U;
+		int8_t* const			b_i8_ptr = &b_i8;
+		int8_t					bb_i8 = 0U;
+
+		int8_t					c_i8 = 0U;
+		int8_t*					c_i8_ptr = nullptr;
+		int8_t					cc_i8 = 0U;
+		int8_t*					cc_i8_ptr = nullptr;
+		int8_t* const* const	ccc_i8_ptr = &cc_i8_ptr;
 
 		///////////////////////////////////////////////////////////////
-		int8_t int8_a = 1U;
-		int8_t int8_aa = 2U;
-		// change value : X
-		// change address : O
-		int8_t const * int8_ptr_a = nullptr;
 
-		int8_ptr_a = &int8_a;
-		printf("int8_ptr_a ptr  : %lld\n", (int64_t)int8_ptr_a);
-		printf("int8_ptr_a value : %lld\n", (int64_t)(*int8_ptr_a));
+		// [Example]
+		// ((int8_t) const)* a_i8_ptr
+		// change value       : O
+		// change value-value : X
+		// Value const
 
-		int8_ptr_a = &int8_aa;
-		printf("int8_ptr_a ptr  : %lld\n", (int64_t)int8_ptr_a);
-		printf("int8_ptr_a value : %lld\n", (int64_t)(*int8_ptr_a));
+		a_i8 = 1U;
+		a_i8_ptr = &a_i8;
+		// change value       : O
+		printf("a_i8_ptr       : %lld\n", (int64_t)a_i8_ptr);
+		printf("a_i8_ptr value : %lld\n", (int64_t)(*a_i8_ptr));
 
-		// Can't
-		//*int8_ptr_a = int8_aa;
+		aa_i8 = 2U;
+		a_i8_ptr = &aa_i8;
+		// change value       : O
+		printf("a_i8_ptr       : %lld\n", (int64_t)a_i8_ptr);
+		printf("a_i8_ptr value : %lld\n", (int64_t)(*a_i8_ptr));
+
+		// *a_i8_ptr = a_i8;
+		// change value-value : X
+
 		///////////////////////////////////////////////////////////////
+
 		printf("\n");
-		///////////////////////////////////////////////////////////////
-		int8_t int8_b = 3U;
-		int8_t int8_bb = 4U;
-		// change value : O
-		// change address : X
-		int8_t* const int8_ptr_b = &int8_bb;
 
-		// Can't
-		//int8_ptr_b = &int8_bb;
-		printf("int8_ptr_b ptr  : %lld\n", (int64_t)int8_ptr_b);
-		printf("int8_ptr_b value : %lld\n", (int64_t)(*int8_ptr_b));
-
-		*int8_ptr_b = int8_b;
-		printf("int8_ptr_b ptr  : %lld\n", (int64_t)int8_ptr_b);
-		printf("int8_ptr_b value : %lld\n", (int64_t)(*int8_ptr_b));
 		///////////////////////////////////////////////////////////////
+
+		// [Example]
+		// (int8_t*) const b_i8_ptr
+		// change value       : X
+		// change value-value : O
+		// Pointer const
+
+		b_i8 = 3U;
+		*b_i8_ptr = b_i8;
+		// change value-value : O
+		printf("b_i8_ptr       : %lld\n", (int64_t)b_i8_ptr);
+		printf("b_i8_ptr value : %lld\n", (int64_t)(*b_i8_ptr));
+
+		bb_i8 = 4U;
+		*b_i8_ptr = bb_i8;
+		// change value-value : O
+		printf("b_i8_ptr       : %lld\n", (int64_t)b_i8_ptr);
+		printf("b_i8_ptr value : %lld\n", (int64_t)(*b_i8_ptr));
+
+		// b_i8_ptr = &bb_i8;
+		// change value       : X
+
+		///////////////////////////////////////////////////////////////
+
 		printf("\n");
+
 		///////////////////////////////////////////////////////////////
-		int8_t int8_c = 5U;
-		int8_t int8_cc = 6U;
-		int8_t* int8_ccc = &int8_cc;
-		// change value : O
-		// change address : X
-		int8_t* const * const int8_ptr_c = &int8_ccc;
 
-		// Can't
-		//(int8_ptr_c) = &int8_ccc;
-		//(*int8_ptr_c) = &int8_ccc;
-		printf("int8_ptr_c ptr  : %lld\n", (int64_t)int8_ptr_c);
-		printf("int8_ptr_c value (ptr -> ptr) : %lld\n", (int64_t)(*int8_ptr_c));
-		printf("int8_ptr_c value-value (ptr -> ptr -> value) : %lld\n", (int64_t)(*(*int8_ptr_c)));
+		// [Example]
+		// ((int8_t*) const)* const ccc_i8_ptr
+		// change value             : X
+		// change value-value       : X
+		// change value-value-value : O
+		// ((Pointer const) Pointer cosnt)
 
-		(*(*int8_ptr_c)) = int8_c;
-		printf("int8_ptr_c ptr  : %lld\n", (int64_t)int8_ptr_c);
-		printf("int8_ptr_c value (ptr -> ptr) : %lld\n", (int64_t)(*int8_ptr_c));
-		printf("int8_ptr_c value-value (ptr -> ptr -> value) : %lld\n", (int64_t)(*(*int8_ptr_c)));
+		cc_i8 = 5U;
+		cc_i8_ptr = &cc_i8;
+		printf("ccc_i8_ptr                                   : %lld\n", (int64_t)ccc_i8_ptr);
+		printf("ccc_i8_ptr value (ptr -> ptr)                : %lld\n", (int64_t)(*ccc_i8_ptr));
+		printf("ccc_i8_ptr value-value (ptr -> ptr -> value) : %lld\n", (int64_t)(*(*ccc_i8_ptr)));
+
+		c_i8 = 6U;
+		cc_i8_ptr = &c_i8;
+		printf("ccc_i8_ptr                                   : %lld\n", (int64_t)ccc_i8_ptr);
+		printf("ccc_i8_ptr value (ptr -> ptr)                : %lld\n", (int64_t)(*ccc_i8_ptr));
+		printf("ccc_i8_ptr value-value (ptr -> ptr -> value) : %lld\n", (int64_t)(*(*ccc_i8_ptr)));
+
+		(*(*ccc_i8_ptr)) = 7U;
+		// change value-value-value : O
+		printf("ccc_i8_ptr                                   : %lld\n", (int64_t)ccc_i8_ptr);
+		printf("ccc_i8_ptr value (ptr -> ptr)                : %lld\n", (int64_t)(*ccc_i8_ptr));
+		printf("ccc_i8_ptr value-value (ptr -> ptr -> value) : %lld\n", (int64_t)(*(*ccc_i8_ptr)));
+
+		printf("c_i8                                         : %lld\n", (int64_t)c_i8);
+		printf("cc_i8                                        : %lld\n", (int64_t)cc_i8);
+
+		// ccc_i8_ptr = &c_i8_ptr;
+		// (*ccc_i8_ptr) = &c_i8_ptr;
+		// change value             : X
+		// change value-value       : X
+
 		///////////////////////////////////////////////////////////////
 
 	}
@@ -86,13 +130,13 @@ void DOYOUKNOW_CLASS::ptr_const(void)
 
 void main(void)
 {
-	DOYOUKNOW_CLASS* do_you_know;
-	do_you_know = new DOYOUKNOW_CLASS();
+	DOYOUKNOW_CLASS* do_you_know_ptr;
+	do_you_know_ptr = new DOYOUKNOW_CLASS();
 
-	do_you_know->ptr_const();
+	do_you_know_ptr->ptr_const();
 
-	delete do_you_know;
-	do_you_know = nullptr;
+	delete do_you_know_ptr;
+	do_you_know_ptr = nullptr;
 
 	return;
 }

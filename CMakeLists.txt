@@ -61,7 +61,7 @@ message(STATUS "${PROJECT_NAME} : CMAKE_CXX_FLAGS_DEBUG set to ${CMAKE_CXX_FLAGS
 message(STATUS "${PROJECT_NAME} : CMAKE_CXX_FLAGS_RELEASE set to ${CMAKE_CXX_FLAGS_RELEASE}")
 
 ################################################################################
-# UNIX : Optimize Level set 0
+# UNIX : Optimize Level set O0(alphabet O + zero 0)
 ################################################################################
 if(UNIX)
     string(REGEX REPLACE "-O[0123]" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
