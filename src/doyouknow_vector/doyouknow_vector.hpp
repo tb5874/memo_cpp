@@ -17,8 +17,8 @@ public:
 					std::vector<int32_t>& find_box_idx);
 
 	void find_last_small_box_index(	const std::vector<int32_t>& boxes,
-										const std::vector<int32_t>& find_box_idx,
-										int32_t& small_box_idx);
+									const std::vector<int32_t>& find_box_idx,
+									int32_t& small_box_idx);
 
 	bool input_box(	const std::vector<int32_t>& goods,
 					const int32_t& goods_idx,
