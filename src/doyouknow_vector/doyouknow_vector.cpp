@@ -18,47 +18,46 @@ void DOYOUKNOW_CLASS::std_vector(void)
 		srand((unsigned int)time(NULL));
 
 		int item_count = 100000;
-		int size_limit = 2000000001;
+		int size_limit = 2000000000;
 
-		std::vector<int32_t> goods;
-		std::vector<int32_t> boxes;
-		std::vector<int32_t> save_box;
+		std::vector<int32_t>	goods;
+		std::vector<int32_t>	boxes;
+		std::vector<int32_t>	find_box_idx;
+		int32_t					small_box_idx = 0;
+		std::vector<int32_t>	box_and_goods;
 
 		goods.clear();
 		boxes.clear();
-		save_box.clear();
+		find_box_idx.clear();
+		box_and_goods.clear();
 
 		goods.resize(item_count);
 		boxes.resize(item_count);
-		save_box.resize(item_count);
+		find_box_idx.resize(item_count);
+		box_and_goods.resize(item_count);
 
 		for (int idx = 0; idx < item_count; idx++)
 		{
-			goods.at(idx) = (int32_t)(rand() % size_limit);
-			boxes.at(idx) = (int32_t)(rand() % size_limit);
-			save_box.at(idx) = (int32_t)(-1);
+			goods.at(idx) = (int32_t)((rand() % size_limit) + 1);
+			boxes.at(idx) = (int32_t)((rand() % size_limit) + 1);
+			find_box_idx.at(idx) = -1;
+			box_and_goods.at(idx) = (int32_t)(0);
 		}
 		// Make data : <--
 
 		for (int32_t goods_idx = 0; goods_idx < item_count; goods_idx++)
 		{
-			// Find box
-			std::vector<int32_t> find_box_index =
-				find_box(boxes, goods, goods_idx);
 
-			// If not find box, next goods.
-			if (find_box_index.size() == 0)
-			{
-				continue;
-			}
+			// Find box
+			std::fill(find_box_idx.begin(), find_box_idx.end(), -1);
+			find_box(goods, goods_idx, boxes, find_box_idx);
 
 			// Find small box
-			int32_t last_small_box_index =
-				find_last_small_box_index(boxes, find_box_index);
+			small_box_idx = 0;
+			find_last_small_box_index(boxes, find_box_idx, small_box_idx);
 
 			// Input goods to box
-			bool save_result =
-				input_box(goods, goods_idx, last_small_box_index, save_box);
+			input_box(goods, goods_idx, small_box_idx, box_and_goods);
 
 		}
 	}
@@ -69,45 +68,63 @@ void DOYOUKNOW_CLASS::std_vector(void)
 	return;
 }
 
-std::vector<int32_t> DOYOUKNOW_CLASS::find_box( const std::vector<int32_t>& boxes,
-												const std::vector<int32_t>& goods,
-												const int32_t& goods_idx)
+void DOYOUKNOW_CLASS::find_box(	const std::vector<int32_t>& goods,
+								const int32_t& goods_idx,
+								const std::vector<int32_t>& boxes,
+								std::vector<int32_t>& find_box_idx)
 {
 	try {
-		std::vector<int32_t> find_box_list;
-		find_box_list.clear();
+		
+		int32_t find_count = 0;
+
 		for (int32_t iter = 0; iter < boxes.size(); iter++)
 		{
 			if (boxes.at(iter) >= goods.at(goods_idx))
 			{
-				find_box_list.push_back(iter);
+				find_box_idx.at(find_count) = iter;
+				find_count++;
 			}			
 		}
 
-		return find_box_list;
+		return;
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
 	}
 }
 
-int32_t DOYOUKNOW_CLASS::find_last_small_box_index(	const std::vector<int32_t>& boxes,
-													const std::vector<int32_t>& find_box_index)
+void DOYOUKNOW_CLASS::find_last_small_box_index(	const std::vector<int32_t>& boxes,
+													const std::vector<int32_t>& find_box_idx,
+													int32_t& small_box_idx)
 {
 	try {
-		int32_t last_small_box_index = -1;
-		int32_t box_size = boxes.at(find_box_index.front());
-		for (int32_t iter = 0; iter < find_box_index.size(); iter++)
+
+		if (find_box_idx.at(0) == -1)
 		{
-			if (boxes.at(find_box_index.at(iter)) <= box_size)
+			; // Nothing
+		}
+		else
+		{
+			int32_t box_size = boxes.at( find_box_idx.at(0) );
+			int32_t next_box_size = 0;
+			for (int32_t iter = 0; iter < find_box_idx.size(); iter++)
 			{
-				last_small_box_index = find_box_index.at(iter);
-				box_size = boxes.at(find_box_index.at(iter));
-				//printf("small box index / size : [ %d / %d ]\n", last_small_box_index, box_size);
+				if (find_box_idx.at(iter) == -1)
+				{
+					break;
+				}
+
+				next_box_size = boxes.at( find_box_idx.at(iter) );
+				if (next_box_size <= box_size)
+				{
+					box_size = next_box_size;
+					small_box_idx = iter;
+				}
 			}
+			printf("small box index / box size : [ %d / %d ]\n", small_box_idx, box_size);
 		}
 
-		return last_small_box_index;
+		return;
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -116,16 +133,16 @@ int32_t DOYOUKNOW_CLASS::find_last_small_box_index(	const std::vector<int32_t>& 
 
 bool DOYOUKNOW_CLASS::input_box(	const std::vector<int32_t>& goods, 
 									const int32_t& goods_idx,
-									const int32_t& last_small_box_index,
-									std::vector<int32_t>& save_box)
+									const int32_t& small_box_idx,
+									std::vector<int32_t>& box_and_goods)
 {
 	try {
 		bool save_result = false;
-		if ( save_box.at(last_small_box_index) == -1 )
+		if (box_and_goods.at(small_box_idx) == 0 )
 		{
-			save_box.at(last_small_box_index) = goods.at(goods_idx);
+			box_and_goods.at(small_box_idx) = goods.at(goods_idx);
 			save_result = true;
-			//printf("box index / goods size : [ %d / %d ]\n", last_small_box_index, goods.at(goods_idx));
+			printf("goods size : [ %d ]\n", goods.at(goods_idx));
 		}
 		return save_result;
 	}
@@ -136,19 +153,6 @@ bool DOYOUKNOW_CLASS::input_box(	const std::vector<int32_t>& goods,
 
 void main(void)
 {
-	struct bit_field_test
-	{
-		signed int a : 1; // Non-compliant
-		signed int   : 1; // Compliant
-		signed int   : 0; // Compliant
-		signed int b : 2; // Compliant
-		signed int   : 2; // Compliant
-	};
-
-	bit_field_test test_bf;
-	test_bf.a = (int32_t)(-1);
-	test_bf.b = 1;
-	printf("%lld", test_bf.a);
 
 	DOYOUKNOW_CLASS* do_you_know_ptr;
 	do_you_know_ptr = new DOYOUKNOW_CLASS();
