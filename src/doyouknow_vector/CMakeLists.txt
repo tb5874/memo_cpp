@@ -1,5 +1,5 @@
-set(PROJECT_NAME doyouknow_ptr)
-set(ROOT_NAMESPACE doyouknow_ptr)
+set(PROJECT_NAME doyouknow_vector)
+set(ROOT_NAMESPACE doyouknow_vector)
 
 ################################################################################
 # required package
@@ -18,13 +18,13 @@ message(STATUS "${PROJECT_NAME} : PROJECT_NAME set to ${PROJECT_NAME}")
 ################################################################################
 # Source groups
 ################################################################################
-set(src_doyouknow_ptr
-    "doyouknow_ptr.cpp"
-    "doyouknow_ptr.hpp"
+set(src_doyouknow_vector
+    "doyouknow_vector.cpp"
+    "doyouknow_vector.hpp"
 )
-source_group("src_doyouknow_ptr" FILES ${src_doyouknow_ptr})
+source_group("src_doyouknow_vector" FILES ${src_doyouknow_vector})
 set(ALL_FILES
-    ${src_doyouknow_ptr}
+    ${src_doyouknow_vector}
 )
 
 ################################################################################

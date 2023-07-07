@@ -1,5 +1,5 @@
-set(PROJECT_NAME doyouknow_ptr)
-set(ROOT_NAMESPACE doyouknow_ptr)
+set(PROJECT_NAME doyouknow_bitfield)
+set(ROOT_NAMESPACE doyouknow_bitfield)
 
 ################################################################################
 # required package
@@ -18,13 +18,13 @@ message(STATUS "${PROJECT_NAME} : PROJECT_NAME set to ${PROJECT_NAME}")
 ################################################################################
 # Source groups
 ################################################################################
-set(src_doyouknow_ptr
-    "doyouknow_ptr.cpp"
-    "doyouknow_ptr.hpp"
+set(src_doyouknow_bitfield
+    "doyouknow_bitfield.cpp"
+    "doyouknow_bitfield.hpp"
 )
-source_group("src_doyouknow_ptr" FILES ${src_doyouknow_ptr})
+source_group("src_doyouknow_bitfield" FILES ${src_doyouknow_bitfield})
 set(ALL_FILES
-    ${src_doyouknow_ptr}
+    ${src_doyouknow_bitfield}
 )
 
 ################################################################################
