@@ -68,7 +68,7 @@ void DOYOUKNOW_CLASS::bitfield(void)
 			uint32_t a : 1; // bit position 1
 			uint32_t   : 0; // this mean, uint32_t x 2, must be unnamed.
 			uint32_t b : 1; // next 4 byte, bit position 1
-			uint32_t   : 30; // Padding
+			uint32_t   : 31; // Padding
 		};
 		bitfield_test04 test_04;
 		memset(&test_04, 0, sizeof(struct bitfield_test04));
