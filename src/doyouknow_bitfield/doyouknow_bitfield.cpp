@@ -14,19 +14,53 @@ void DOYOUKNOW_CLASS::bitfield(void)
 {
 	try {
 
-		struct bit_field_test
+		// Total size 1 byte (uint32_t)
+		struct bitfield_test01
 		{
-			signed int a : 1; // Non-compliant
-			signed int : 1; // Compliant
-			signed int : 0; // Compliant
-			signed int b : 2; // Compliant
-			signed int : 2; // Compliant
+			uint8_t a : 1; // bit position 1
+			uint8_t b : 1; // bit position 2
+			uint8_t   : 6; // Padding
 		};
+		bitfield_test01 test_01;
+		memset(&test_01, 0, sizeof(struct bitfield_test01));
+		printf("test_bf %p\n", &test_01);
+		// (uint8_t)1 = 0000 0001
+		// (uint8_t)2 = 0000 0010
+		test_01.a = (uint8_t)1; // save 1bit : 1 (bit position 1)
+		test_01.b = (uint8_t)2; // save 1bit : 0 (bit position 2)
 
-		bit_field_test test_bf;
-		test_bf.a = (int32_t)(-1);
-		test_bf.b = 1;
-		printf("%lld", test_bf.a);
+		// Total size 4 byte (uint32_t)
+		struct bitfield_test02
+		{
+			uint32_t a : 1; // bit position 1
+			uint32_t b : 1; // bit position 2
+			uint32_t   : 30; // Padding
+		};
+		bitfield_test02 test_02;
+		memset(&test_02, 0, sizeof(struct bitfield_test02));
+		printf("test_bf %p\n", &test_02);
+		// (uint32_t)1 = 0000 0000 0000 0000 0000 0000 0000 0001
+		// (uint32_t)2 = 0000 0000 0000 0000 0000 0000 0000 0010
+		test_02.a = (uint32_t)1; // save 1bit : 1 (bit position 1)
+		test_02.b = (uint32_t)2; // save 1bit : 0 (bit position 2)
+
+		// Total size 4 byte (uint32_t)
+		struct bitfield_test03
+		{
+			uint32_t a : 1; // bit position 1
+			uint32_t   : 7; // Padding
+			uint32_t b : 1; // bit position 8
+			uint32_t   : 23; // Padding
+		};
+		bitfield_test03 test_03;
+		memset(&test_03, 0, sizeof(struct bitfield_test03));
+		printf("test_bf %p\n", &test_03);
+		// (uint32_t)1 = 0000 0000 0000 0000 0000 0000 0000 0001
+		test_03.a = (uint32_t)1; // save 1bit : 1 (bit position 1)
+		test_03.b = (uint32_t)1; // save 1bit : 1 (bit position 8)
+
+		return;
+
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
