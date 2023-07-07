@@ -78,6 +78,20 @@ void DOYOUKNOW_CLASS::bitfield(void)
 		test_04.a = (uint32_t)1; // save 1bit : 1 (bit position 1)
 		test_04.b = (uint32_t)1; // save 1bit : 1 (next 4 byte, bit position 1)
 
+		// Total size 8 byte (uint32_t x 2)
+		struct bitfield_test05
+		{
+			uint32_t a : 32; // use 32 bit
+			uint32_t b : 1;  // next 32 bit : bit position 1
+		};
+		bitfield_test05 test_05;
+		memset(&test_05, 0, sizeof(struct bitfield_test05));
+		printf("test_bf %p\n", &test_05);
+		printf("test_bf size %lld\n", (int64_t)sizeof(struct bitfield_test05)); // 8 byte
+		// (uint32_t)4294967295 = 1111 1111 1111 1111 1111 1111 1111 1111
+		test_05.a = (uint32_t)4294967295; // save 32bit
+		test_05.b = (uint32_t)1;          // save 1bit : 1 (next 4 byte, bit position 1)
+
 		return;
 
 	}
