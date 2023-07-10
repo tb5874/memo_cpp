@@ -20,8 +20,16 @@ public:
 									const std::vector<int32_t>& find_box_idx,
 									int32_t& small_box_idx);
 
-	bool input_box(	const std::vector<int32_t>& goods,
+	void input_box(	const std::vector<int32_t>& goods,
 					const int32_t& goods_idx,
 					const int32_t& small_box_idx,
-					std::vector<int32_t>& box_and_goods);
+					std::vector<int32_t>& box_and_goods,
+					bool& input_result);
+
+	void find_next_box(	std::vector<int32_t>& box_and_goods,
+						const int32_t& small_box_idx,
+						const std::vector<int32_t>& goods,
+						int32_t& goods_idx,
+						std::vector<int32_t>& copy_boxes,
+						int32_t& refurbish_goods_idx);
 };
