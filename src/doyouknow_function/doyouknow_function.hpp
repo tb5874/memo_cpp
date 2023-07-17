@@ -10,14 +10,14 @@ class DOYOUKNOW_CLASS
 		int32_t member_a;
 		int32_t member_b;
 
-public:
-		const void function_define_before_const_void(void);
-		const int32_t function_define_before_const_int(void);
+	public:
+		const void		before_const_void(void);
+		const int32_t	before_const_int(void);
+		void const		before_void_const(void);
+		int32_t const	before_int_const(void);
 
-		void const function_define_before_void_const(void);
-		int32_t const function_define_before_int_const(void);
+		void after_const(void) const;
+		void after_throw(void) throw (const char*);
 
-		void function_define_after_const(void) const;
-		void function_define_after_throw(void) throw (const char*);
-		void function_define_throw(void);
+		void just_throw(void);
 };

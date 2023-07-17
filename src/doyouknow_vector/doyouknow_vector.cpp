@@ -85,12 +85,15 @@ void DOYOUKNOW_CLASS::std_vector(void)
 			}
 
 		}
+
+		return;
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
 	}
-
-	return;
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
+	}
 }
 
 void DOYOUKNOW_CLASS::find_box(	const std::vector<int32_t>& goods,
@@ -116,6 +119,9 @@ void DOYOUKNOW_CLASS::find_box(	const std::vector<int32_t>& goods,
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
+	}
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
 }
 
@@ -155,6 +161,9 @@ void DOYOUKNOW_CLASS::find_last_small_box_index(	const std::vector<int32_t>& box
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
 	}
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
+	}
 }
 
 void DOYOUKNOW_CLASS::input_box(	const std::vector<int32_t>& goods, 
@@ -175,6 +184,9 @@ void DOYOUKNOW_CLASS::input_box(	const std::vector<int32_t>& goods,
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
+	}
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
 }
 
@@ -204,18 +216,28 @@ void DOYOUKNOW_CLASS::find_next_box(	std::vector<int32_t>& box_and_goods,
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
 	}
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
+	}
 }
 
 void main(void)
 {
+	try{
+		DOYOUKNOW_CLASS* do_you_know_ptr;
+		do_you_know_ptr = new DOYOUKNOW_CLASS();
 
-	DOYOUKNOW_CLASS* do_you_know_ptr;
-	do_you_know_ptr = new DOYOUKNOW_CLASS();
+		do_you_know_ptr->std_vector();
 
-	do_you_know_ptr->std_vector();
+		delete do_you_know_ptr;
+		do_you_know_ptr = nullptr;
 
-	delete do_you_know_ptr;
-	do_you_know_ptr = nullptr;
-
-	return;
+		return;
+	}
+	catch (std::exception& e) {
+		printf("C++ Exception( std::exception ) : %s\n", e.what());
+	}
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
+	}
 }

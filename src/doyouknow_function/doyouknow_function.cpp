@@ -12,7 +12,7 @@ DOYOUKNOW_CLASS::~DOYOUKNOW_CLASS(void)
 	return;
 }
 
-const void DOYOUKNOW_CLASS::function_define_before_const_void(void)
+const void DOYOUKNOW_CLASS::before_const_void(void)
 {
 	try {
 		printf("%s\n",__FUNCTION__);
@@ -26,7 +26,7 @@ const void DOYOUKNOW_CLASS::function_define_before_const_void(void)
 	}
 }
 
-const int32_t DOYOUKNOW_CLASS::function_define_before_const_int(void)
+const int32_t DOYOUKNOW_CLASS::before_const_int(void)
 {
 	try {
 		// 'return' copy 'return_value' to outside.
@@ -42,7 +42,7 @@ const int32_t DOYOUKNOW_CLASS::function_define_before_const_int(void)
 	}
 }
 
-void const DOYOUKNOW_CLASS::function_define_before_void_const(void)
+void const DOYOUKNOW_CLASS::before_void_const(void)
 {
 	try {
 		printf("%s\n", __FUNCTION__);
@@ -56,7 +56,7 @@ void const DOYOUKNOW_CLASS::function_define_before_void_const(void)
 	}
 }
 
-int32_t const DOYOUKNOW_CLASS::function_define_before_int_const(void)
+int32_t const DOYOUKNOW_CLASS::before_int_const(void)
 {
 	try {
 		printf("%s\n", __FUNCTION__);
@@ -71,7 +71,7 @@ int32_t const DOYOUKNOW_CLASS::function_define_before_int_const(void)
 	}
 }
 
-void DOYOUKNOW_CLASS::function_define_after_const(void) const
+void DOYOUKNOW_CLASS::after_const(void) const
 {
 	try {
 		printf("%s\n", __FUNCTION__);
@@ -88,14 +88,12 @@ void DOYOUKNOW_CLASS::function_define_after_const(void) const
 	}
 }
 
-void DOYOUKNOW_CLASS::function_define_after_throw(void) throw (const char*)
+void DOYOUKNOW_CLASS::after_throw(void) throw (const char*)
 {
 	try {
-		// throw (const char*) is not force condition.
-		// throw (const char*) can ignore.
 		// throw (const char*) is like comment.
-		// Warning C4290
-		// So, that is like throw exception comment.
+		// throw (const char*) is not force condition.
+		// throw (const char*) can ignore. (Warning C4290)
 		throw (int32_t)123;
 		return;
 	}
@@ -110,7 +108,7 @@ void DOYOUKNOW_CLASS::function_define_after_throw(void) throw (const char*)
 	}
 }
 
-void DOYOUKNOW_CLASS::function_define_throw(void)
+void DOYOUKNOW_CLASS::just_throw(void)
 {
 	try {
 		throw (int32_t)123;
@@ -132,20 +130,20 @@ void main(void)
 
 		int32_t get_return;
 
-		do_you_know_ptr->function_define_before_const_void();
-		get_return = do_you_know_ptr->function_define_before_const_int();
-	
-		do_you_know_ptr->function_define_before_void_const();
-		get_return = do_you_know_ptr->function_define_before_int_const();
+		do_you_know_ptr->before_const_void();
+		get_return = do_you_know_ptr->before_const_int();
+		do_you_know_ptr->before_void_const();
+		get_return = do_you_know_ptr->before_int_const();
 
-		do_you_know_ptr->function_define_after_const();
-		do_you_know_ptr->function_define_after_throw();
+		do_you_know_ptr->after_const();
+		do_you_know_ptr->after_throw();
 
-		do_you_know_ptr->function_define_throw();
+		do_you_know_ptr->just_throw();
 
 		delete do_you_know_ptr;
 		do_you_know_ptr = nullptr;
 
+		return;
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -153,6 +151,4 @@ void main(void)
 	catch (...) {
 		printf("C++ Exception( std::exception ) : Not std::exception\n");
 	}
-
-	return;
 }

@@ -146,6 +146,9 @@ elseif(UNIX)
         "$<$<CONFIG:Release>:"
             #
         ">"
+        "$<$<COMPILE_LANGUAGE:CXX>:"
+            #
+        ">"
         #
     )
 endif()

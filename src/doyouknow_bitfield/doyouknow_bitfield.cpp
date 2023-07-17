@@ -13,7 +13,6 @@ DOYOUKNOW_CLASS::~DOYOUKNOW_CLASS(void)
 void DOYOUKNOW_CLASS::bitfield(void)
 {
 	try {
-
 		// Total size 1 byte (uint32_t)
 		struct bitfield_test01
 		{
@@ -98,19 +97,28 @@ void DOYOUKNOW_CLASS::bitfield(void)
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
 	}
-
-	return;
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
+	}
 }
 
 void main(void)
 {
-	DOYOUKNOW_CLASS* do_you_know_ptr;
-	do_you_know_ptr = new DOYOUKNOW_CLASS();
+	try{
+		DOYOUKNOW_CLASS* do_you_know_ptr;
+		do_you_know_ptr = new DOYOUKNOW_CLASS();
 
-	do_you_know_ptr->bitfield();
+		do_you_know_ptr->bitfield();
 
-	delete do_you_know_ptr;
-	do_you_know_ptr = nullptr;
+		delete do_you_know_ptr;
+		do_you_know_ptr = nullptr;
 
-	return;
+		return;
+	}
+	catch (std::exception& e) {
+		printf("C++ Exception( std::exception ) : %s\n", e.what());
+	}
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
+	}
 }

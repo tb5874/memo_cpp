@@ -18,10 +18,14 @@ void DOYOUKNOW_CLASS::std_macro(void)
 
 		printf("Macro define variable glue1 : %d\n", glue1);
 		printf("Macro define variable glue10 : %d\n", glue10);
+
 		return;
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
+	}
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
 }
 
@@ -35,6 +39,8 @@ void main(void)
 
 		delete do_you_know_ptr;
 		do_you_know_ptr = nullptr;
+
+		return;
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -42,6 +48,4 @@ void main(void)
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
-	return;
 }
