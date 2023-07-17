@@ -13,6 +13,11 @@ DOYOUKNOW_CLASS::~DOYOUKNOW_CLASS(void)
 void DOYOUKNOW_CLASS::std_macro(void)
 {
 	try {
+		int32_t glue_char(1) = 1;
+		int32_t glue_char(10) = 10;
+
+		printf("Macro define variable glue1 : %d\n", glue1);
+		printf("Macro define variable glue10 : %d\n", glue10);
 		return;
 	}
 	catch (std::exception& e) {

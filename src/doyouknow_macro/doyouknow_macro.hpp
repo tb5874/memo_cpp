@@ -1,4 +1,8 @@
 #pragma once
+
+// macro ## : glue char.
+#define glue_char(x) glue ## x
+
 #include <iostream>
 
 class DOYOUKNOW_CLASS
