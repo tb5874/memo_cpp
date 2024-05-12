@@ -13,9 +13,9 @@ class DOYOUKNOW_CLASS
 		void fft_step01(float* xr, float* xi, int logn);
 		void fft_step02(float* xr, float* xi, int logn);
 		void fft_step03_04(float* xr, float* xi, int logn);
-		void fft_unit1(float* xr, float* xi, int logn);
+		void fft_unit(float* xr, float* xi, int logn);
 		void fft_unit2(float* xr, float* xi, int logn);
-		void fft_unit3(float* xr, float* xi, int logn);
 		void fft_unit4(float* xr, float* xi, int logn);
+		void fft_unit6(float* xr, float* xi, int logn);
 
 };

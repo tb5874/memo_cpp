@@ -44,10 +44,32 @@ void DOYOUKNOW_CLASS::kaldi_fft(void) {
 		}
 
 		std::chrono::steady_clock::time_point chrono_tick = std::chrono::steady_clock::now();		
-		fft_unit1(test_xr, test_xi, test_logn);
+		// need to summary functions ... : <--
+
+		// logn > 0
+		fft_unit(test_xr, test_xi, test_logn);
+
+		// logn > 2
 		fft_unit2(test_xr, test_xi, test_logn);
-		fft_unit3(test_xr, test_xi, test_logn);
+
+		// logn > 4
 		fft_unit4(test_xr, test_xi, test_logn);
+
+		// logn > 6
+		fft_unit6(test_xr, test_xi, test_logn);
+
+		// logn > 8
+		// fft_unit8(xr, xi, logn);
+
+		// logn > 10
+		// fft_unit10(xr, xi, logn);
+
+		// ...
+
+		// logn > N
+		// fft_unitN(xr, xi, logn);
+
+		// need to summary functions ... : -->
 		std::chrono::duration<double>chrono_tok = std::chrono::steady_clock::now() - chrono_tick;
 
 		printf("FFT time : %20.10f", chrono_tok);
@@ -154,12 +176,13 @@ void DOYOUKNOW_CLASS::fft_step02(float* xr, float* xi, int logn) {
 void DOYOUKNOW_CLASS::fft_step03_04(float* xr, float* xi, int logn) {
 
 	// if logn == 2
-	// m4 always 1.
-		// if m4 == 1
-		// iteration always do once.
+		// m4 always 1.
+
+	// if m4 == 1
+		// idx always 0.
 		// So, math result always same.
-		// input == output
-			// you can logn <= 2 skip.
+			// input == output
+			// you can logn <= 2 skip ...
 
 	if (logn > 2) {
 
@@ -192,8 +215,18 @@ void DOYOUKNOW_CLASS::fft_step03_04(float* xr, float* xi, int logn) {
 		float spc3n = 0.0f;
 		float smc3n = 0.0f;
 
+
+		// if you want include '++' to 'for statement',
+		// comment below 4 line and modify 'idx = 0' : --> 
+		xr1++;
+		xr2++;
+		xi1++;
+		xi2++;
+		// comment below 4 line and modify 'idx = 0' : <--
+
+
 		// Parallel programming : -->
-		for (int idx = 0; idx < m4; idx++) {
+		for (int idx = 1; idx < m4; idx++) {
 
 			ang = (float)(idx) / (float)m * float_2pi;
 			c = std::cos(ang);
@@ -214,6 +247,17 @@ void DOYOUKNOW_CLASS::fft_step03_04(float* xr, float* xi, int logn) {
 			result_xi1 = cn * (*xr1 + *xi1) + spcn * (*xr1);
 			result_xi2 = c3n * (*xr2 + *xi2) + spc3n * (*xr2);
 
+			// if you don't care float point error,
+			// comment below 7 line ( kaldi step 3 & 4 ) : -->
+			if ((m4 != 1) && ((m4 / 2) == idx)) {
+				float sqhalf = 1.0f / std::sqrt(2.0f);
+				result_xr1 = sqhalf * (*xr1 + *xi1);
+				result_xi1 = sqhalf * (*xi1 - *xr1);
+				result_xr2 = sqhalf * (*xi2 - *xr2);
+				result_xi2 = -sqhalf * (*xr2 + *xi2);
+			}
+			// comment below 7 line ( kaldi step 3 & 4 ) : <--
+
 			*xr1 = result_xr1;
 			*xr2 = result_xr2;
 			*xi1 = result_xi1;
@@ -233,7 +277,7 @@ void DOYOUKNOW_CLASS::fft_step03_04(float* xr, float* xi, int logn) {
 
 }
 
-void DOYOUKNOW_CLASS::fft_unit1(float* xr, float* xi, int logn) {
+void DOYOUKNOW_CLASS::fft_unit(float* xr, float* xi, int logn) {
 	try {
 
 		for (int idx = logn; idx > 0; idx--) {
@@ -264,105 +308,26 @@ void DOYOUKNOW_CLASS::fft_unit2(float* xr, float* xi, int logn) {
 		float* xr_ptr = nullptr;
 		float* xi_ptr = nullptr;
 
-		for (int div1 = logn; div1 > 2; div1--) {
-			//////////////////////////////////////////////////
+		for (int idx = logn; idx > 2; idx--) {
 
-			logn_ = div1;
+			//////////////////////////////////////////////////
+			logn_ = idx;
 			m = 1 << logn_;
 			m2 = 1 << (logn_ - 1);
 			m4 = 1 << (logn_ - 2);
 			xr_ptr = xr;
 			xi_ptr = xi;
 
-			// Parallel programming : -->
 			xr_ptr = xr_ptr + m2;
 			xi_ptr = xi_ptr + m2;
-			fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
+			fft_unit(xr_ptr, xi_ptr, logn_ - 2);
 			xr_ptr = xr_ptr + m4;
 			xi_ptr = xi_ptr + m4;
-			fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
-			// Parallel programming : <--
-
+			fft_unit(xr_ptr, xi_ptr, logn_ - 2);
 			//////////////////////////////////////////////////
 
 		}
 
-	}
-	catch (std::exception& e) {
-		printf("C++ Exception( std::exception ) : %s\n", e.what());
-	}
-	catch (...) {
-		printf("C++ Exception( ... ) : Not std::exception\n");
-	}
-
-	return;
-
-}
-
-void DOYOUKNOW_CLASS::fft_unit3(float* xr, float* xi, int logn) {
-	try {
-
-		int logn_ = 0;
-		int m = 0;
-		int m2 = 0;
-		int m4 = 0;
-		float* xr_ptr = nullptr;
-		float* xi_ptr = nullptr;
-
-		for (int div1 = logn; div1 > 4; div1--) {
-			for (int div2 = div1 - 2; div2 > 2; div2--) {
-				//////////////////////////////////////////////////
-
-				// m2
-				logn_ = div1;
-				m = 1 << logn_;
-				m2 = 1 << (logn_ - 1);
-				m4 = 1 << (logn_ - 2);
-				xr_ptr = xr + m2;
-				xi_ptr = xi + m2;
-
-				logn_ = div2;
-				m = 1 << logn_;
-				m2 = 1 << (logn_ - 1);
-				m4 = 1 << (logn_ - 2);
-
-				// Parallel programming : -->
-				xr_ptr = xr_ptr + m2;
-				xi_ptr = xi_ptr + m2;
-				fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
-				xr_ptr = xr_ptr + m4;
-				xi_ptr = xi_ptr + m4;
-				fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
-				// Parallel programming : <--
-
-				//////////////////////////////////////////////////
-
-				// m2 + m4
-				logn_ = div1;
-				m = 1 << logn_;
-				m2 = 1 << (logn_ - 1);
-				m4 = 1 << (logn_ - 2);
-				xr_ptr = xr + m2 + m4;
-				xi_ptr = xi + m2 + m4;
-
-				logn_ = div2;
-				m = 1 << logn_;
-				m2 = 1 << (logn_ - 1);
-				m4 = 1 << (logn_ - 2);
-
-				// Parallel programming : -->
-				xr_ptr = xr_ptr + m2;
-				xi_ptr = xi_ptr + m2;
-				fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
-				xr_ptr = xr_ptr + m4;
-				xi_ptr = xi_ptr + m4;
-				fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
-				// Parallel programming : <--
-
-				//////////////////////////////////////////////////
-
-			}
-		}
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -385,142 +350,189 @@ void DOYOUKNOW_CLASS::fft_unit4(float* xr, float* xi, int logn) {
 		float* xr_ptr = nullptr;
 		float* xi_ptr = nullptr;
 
-		for (int div1 = logn; div1 > 6; div1--) {
-			for (int div2 = div1 - 2; div2 > 2; div2--) {
-				for (int div3 = div2 - 2; div3 > 2; div3--) {
-					//////////////////////////////////////////////////
+		for (int idx = logn; idx > 4; idx--) {
+			for (int div = idx - 2; div > 2; div--) {
 
-					// [m2]
-					logn_ = div1;
+				//////////////////////////////////////////////////
+				logn_ = idx;
+				m = 1 << logn_;
+				m2 = 1 << (logn_ - 1);
+				m4 = 1 << (logn_ - 2);
+				xr_ptr = xr + m2;
+				xi_ptr = xi + m2;
+
+				logn_ = div;
+				m = 1 << logn_;
+				m2 = 1 << (logn_ - 1);
+				m4 = 1 << (logn_ - 2);
+
+				xr_ptr = xr_ptr + m2;
+				xi_ptr = xi_ptr + m2;
+				fft_unit(xr_ptr, xi_ptr, logn_ - 2);
+				xr_ptr = xr_ptr + m4;
+				xi_ptr = xi_ptr + m4;
+				fft_unit(xr_ptr, xi_ptr, logn_ - 2);
+				//////////////////////////////////////////////////
+				logn_ = idx;
+				m = 1 << logn_;
+				m2 = 1 << (logn_ - 1);
+				m4 = 1 << (logn_ - 2);
+				xr_ptr = xr + m2 + m4;
+				xi_ptr = xi + m2 + m4;
+
+				logn_ = div;
+				m = 1 << logn_;
+				m2 = 1 << (logn_ - 1);
+				m4 = 1 << (logn_ - 2);
+
+				xr_ptr = xr_ptr + m2;
+				xi_ptr = xi_ptr + m2;
+				fft_unit(xr_ptr, xi_ptr, logn_ - 2);
+				xr_ptr = xr_ptr + m4;
+				xi_ptr = xi_ptr + m4;
+				fft_unit(xr_ptr, xi_ptr, logn_ - 2);
+				//////////////////////////////////////////////////
+
+			}
+
+		}
+
+	}
+	catch (std::exception& e) {
+		printf("C++ Exception( std::exception ) : %s\n", e.what());
+	}
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
+	}
+
+	return;
+
+}
+
+void DOYOUKNOW_CLASS::fft_unit6(float* xr, float* xi, int logn) {
+	try {
+
+		int logn_ = 0;
+		int m = 0;
+		int m2 = 0;
+		int m4 = 0;
+		float* xr_ptr = nullptr;
+		float* xi_ptr = nullptr;
+
+		for (int idx = logn; idx > 6; idx--) {
+			for (int div1 = idx - 2; div1 > 2; div1--) {
+				for (int div2 = div1 - 2; div2 > 2; div2--) {
+
+					//////////////////////////////////////////////////
+					logn_ = idx;
 					m = 1 << logn_;
 					m2 = 1 << (logn_ - 1);
 					m4 = 1 << (logn_ - 2);
 					xr_ptr = xr + m2;
 					xi_ptr = xi + m2;
 
-					// [m2] + [m2]
+					logn_ = div1;
+					m = 1 << logn_;
+					m2 = 1 << (logn_ - 1);
+					m4 = 1 << (logn_ - 2);
+					xr_ptr = xr_ptr + m2;
+					xi_ptr = xi_ptr + m2;
+
 					logn_ = div2;
 					m = 1 << logn_;
 					m2 = 1 << (logn_ - 1);
 					m4 = 1 << (logn_ - 2);
+
 					xr_ptr = xr_ptr + m2;
 					xi_ptr = xi_ptr + m2;
-
-					logn_ = div3;
-					m = 1 << logn_;
-					m2 = 1 << (logn_ - 1);
-					m4 = 1 << (logn_ - 2);
-
-					// Parallel programming : -->
-					xr_ptr = xr_ptr + m2;
-					xi_ptr = xi_ptr + m2;
-					fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
+					fft_unit(xr_ptr, xi_ptr, logn_ - 2);
 					xr_ptr = xr_ptr + m4;
 					xi_ptr = xi_ptr + m4;
-					fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
-					// Parallel programming : <--
-
+					fft_unit(xr_ptr, xi_ptr, logn_ - 2);
 					//////////////////////////////////////////////////
-
-					// [m2]
-					logn_ = div1;
+					logn_ = idx;
 					m = 1 << logn_;
 					m2 = 1 << (logn_ - 1);
 					m4 = 1 << (logn_ - 2);
 					xr_ptr = xr + m2;
 					xi_ptr = xi + m2;
 
-					// [m2] + [m2 + m4]
-					logn_ = div2;
+					logn_ = div1;
 					m = 1 << logn_;
 					m2 = 1 << (logn_ - 1);
 					m4 = 1 << (logn_ - 2);
 					xr_ptr = xr_ptr + m2 + m4;
 					xi_ptr = xi_ptr + m2 + m4;
 
-					logn_ = div3;
+					logn_ = div2;
 					m = 1 << logn_;
 					m2 = 1 << (logn_ - 1);
 					m4 = 1 << (logn_ - 2);
 
-					// Parallel programming : -->
 					xr_ptr = xr_ptr + m2;
 					xi_ptr = xi_ptr + m2;
-					fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
+					fft_unit(xr_ptr, xi_ptr, logn_ - 2);
 					xr_ptr = xr_ptr + m4;
 					xi_ptr = xi_ptr + m4;
-					fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
-					// Parallel programming : <--
-
+					fft_unit(xr_ptr, xi_ptr, logn_ - 2);
 					//////////////////////////////////////////////////
-
-					// [m2 + m4]
-					logn_ = div1;
+					logn_ = idx;
 					m = 1 << logn_;
 					m2 = 1 << (logn_ - 1);
 					m4 = 1 << (logn_ - 2);
 					xr_ptr = xr + m2 + m4;
 					xi_ptr = xi + m2 + m4;
 
-					// [m2 + m4] + [m2]
+					logn_ = div1;
+					m = 1 << logn_;
+					m2 = 1 << (logn_ - 1);
+					m4 = 1 << (logn_ - 2);
+					xr_ptr = xr_ptr + m2;
+					xi_ptr = xi_ptr + m2;
+
 					logn_ = div2;
 					m = 1 << logn_;
 					m2 = 1 << (logn_ - 1);
 					m4 = 1 << (logn_ - 2);
+
 					xr_ptr = xr_ptr + m2;
 					xi_ptr = xi_ptr + m2;
-
-					logn_ = div3;
-					m = 1 << logn_;
-					m2 = 1 << (logn_ - 1);
-					m4 = 1 << (logn_ - 2);
-
-					// Parallel programming : -->
-					xr_ptr = xr_ptr + m2;
-					xi_ptr = xi_ptr + m2;
-					fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
+					fft_unit(xr_ptr, xi_ptr, logn_ - 2);
 					xr_ptr = xr_ptr + m4;
 					xi_ptr = xi_ptr + m4;
-					fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
-					// Parallel programming : <--
-
+					fft_unit(xr_ptr, xi_ptr, logn_ - 2);
 					//////////////////////////////////////////////////
-
-					// [m2 + m4]
-					logn_ = div1;
+					logn_ = idx;
 					m = 1 << logn_;
 					m2 = 1 << (logn_ - 1);
 					m4 = 1 << (logn_ - 2);
 					xr_ptr = xr + m2 + m4;
 					xi_ptr = xi + m2 + m4;
 
-					// [m2 + m4] + [m2 + m4]
-					logn_ = div2;
+					logn_ = div1;
 					m = 1 << logn_;
 					m2 = 1 << (logn_ - 1);
 					m4 = 1 << (logn_ - 2);
 					xr_ptr = xr_ptr + m2 + m4;
 					xi_ptr = xi_ptr + m2 + m4;
 
-					logn_ = div3;
+					logn_ = div2;
 					m = 1 << logn_;
 					m2 = 1 << (logn_ - 1);
 					m4 = 1 << (logn_ - 2);
 
-					// Parallel programming : -->
 					xr_ptr = xr_ptr + m2;
 					xi_ptr = xi_ptr + m2;
-					fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
+					fft_unit(xr_ptr, xi_ptr, logn_ - 2);
 					xr_ptr = xr_ptr + m4;
 					xi_ptr = xi_ptr + m4;
-					fft_unit1(xr_ptr, xi_ptr, logn_ - 2);
-					// Parallel programming : <--
-
+					fft_unit(xr_ptr, xi_ptr, logn_ - 2);
 					//////////////////////////////////////////////////
 
 				}
 			}
 		}
+
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
