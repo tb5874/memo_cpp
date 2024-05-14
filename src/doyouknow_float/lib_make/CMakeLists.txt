@@ -107,6 +107,8 @@ if(WIN32)
                     "/Zi" # the compiler to generate symbolic debugging information in a program database (PDB) file for use with the debugger.
                     "/Od" # Disables all optimizations.
                     "/MDd" # Tells the linker to search for unresolved references in a multithreaded, dynamic-link runtime library. ( Debug )
+                    # https://learn.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior?view=msvc-160
+                    "/fp:precise"
                 ">"
                 "$<$<CONFIG:Release>:"
                     # add flag
