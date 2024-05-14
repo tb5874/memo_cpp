@@ -1,5 +1,9 @@
 ﻿cmake_minimum_required(VERSION 3.9)
 
+# CMakeSettings.json : -->
+# tool -> option -> platform -> connect admin -> add -> ip, port, linux username, linux userpassword
+# CMakeSettings.json : <--
+
 if(WIN32)
     #
 elseif(UNIX)

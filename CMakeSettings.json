@@ -1,15 +1,66 @@
 ﻿{
   "configurations": [
     {
-      "name": "x64-Debug",
+      "name": "Debug",
       "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x64_x64" ],
-      "buildRoot": "${projectDir}\\out\\build\\${name}",
-      "installRoot": "${projectDir}\\out\\install\\${name}",
+      "buildRoot": "${projectDir}\\out\\Debug\\build",
+      "installRoot": "${projectDir}\\out\\Debug\\install",
       "cmakeCommandArgs": "",
-      "buildCommandArgs": "",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+      "buildCommandArgs": "-v"
+    },
+    {
+      "name": "Release",
+      "generator": "Ninja",
+      "configurationType": "Release",
+      "buildRoot": "${projectDir}\\out\\Release\\build",
+      "installRoot": "${projectDir}\\out\\Release\\install",
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "cmakeCommandArgs": "",
+      "ctestCommandArgs": "",
+      "buildCommandArgs": "-v"
+    },
+    {
+      "name": "Remote-Linux-GCC-tb-Debug",
+      "generator": "Unix Makefiles",
+      "configurationType": "Debug",
+      "cmakeExecutable": "cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git", "out" ],
+      //"cmakeCommandArgs": "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc",
+      "buildCommandArgs": "-j -l 80",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_c++_x64" ],
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "remoteCMakeListsRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/Debug/src",
+      "remoteBuildRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/Debug/build/${name}",
+      "remoteInstallRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/Debug/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": false,
+      "remoteCopySourcesMethod": "rsync",
+      "addressSanitizerEnabled": false
+    },
+    {
+      "name": "Remote-Linux-GCC-tb-Release",
+      "generator": "Unix Makefiles",
+      "configurationType": "Release",
+      "cmakeExecutable": "cmake",
+      "remoteCopySourcesExclusionList": [ ".vs", ".git", "out" ],
+      //"cmakeCommandArgs": "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc",
+      "buildCommandArgs": "-j -l 80",
+      "ctestCommandArgs": "",
+      "inheritEnvironments": [ "linux_c++_x64" ],
+      "remoteMachineName": "${defaultRemoteMachineName}",
+      "remoteCMakeListsRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/Release/src",
+      "remoteBuildRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/Release/build/${name}",
+      "remoteInstallRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/out/Release/install/${name}",
+      "remoteCopySources": true,
+      "rsyncCommandArgs": "-t --delete --delete-excluded",
+      "remoteCopyBuildOutput": false,
+      "remoteCopySourcesMethod": "rsync",
+      "addressSanitizerEnabled": false
     }
   ]
 }

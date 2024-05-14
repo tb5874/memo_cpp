@@ -1,0 +1,29 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "project": "CMakeLists.txt",
+      "projectTarget": "doyouknow_float_use",
+      "name": "Linux : Debug",
+      "type": "cppgdb",
+      "debuggerConfiguration": "gdb",
+      "MIMode": "gdb",
+      //"gdbpath": "/usr/local/cuda-11.8/bin/cuda-gdb",
+      "args": [],
+      "env": {},
+      "setupCommands": [
+        //{
+        //  "description": "mi async off",
+        //  "text": "-gdb-set mi-async off",
+        //  "ignoreFailures": true
+        //},
+        //{
+        //  "description": "disassembly flavor to intel",
+        //  "text": "-gdb-set disassembly-flavor intel",
+        //  "ignoreFailures": true
+        //}
+      ]
+    }
+  ]
+}
