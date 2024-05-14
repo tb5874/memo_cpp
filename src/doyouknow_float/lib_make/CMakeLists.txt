@@ -116,7 +116,7 @@ if(WIN32)
                 "/EHa" # Specifies the model of exception handling to be performed.
                 "/Wall" # Enables warning and error diagnostics.
                 # https://learn.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior?view=msvc-160
-                "/fp:precise"
+                "/fp:precise" # rule - IEEE 754
             ">"
         )
     endif()
@@ -138,6 +138,18 @@ elseif(UNIX)
                 ">"
                 # add flag
                 "-Wall"
+                # https://gcc.gnu.org/wiki/FloatingPointMath
+                # Support
+                    # infinities
+                    # NaNs
+                    # gradual underflow
+                    # signed zeros
+                    # exception flags and traps
+                    # setting rounding modes.
+                    # Compare with C99's #pragma STDC FENV ACCESS ON.
+                    # Warning! GCC currently assumes that the same rounding mode is in effect everywhere (PR34678).
+                        # with use include <cfenv>
+                "-frounding-math"
             ">"
         )
     endif()
