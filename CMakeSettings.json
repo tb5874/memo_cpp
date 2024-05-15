@@ -1,7 +1,7 @@
 ﻿{
   "configurations": [
     {
-      "name": "Debug",
+      "name": "Debug-Local-Windows-cl",
       "generator": "Ninja",
       "configurationType": "Debug",
       "inheritEnvironments": [ "msvc_x64_x64" ],
@@ -12,7 +12,7 @@
       "buildCommandArgs": "-v"
     },
     {
-      "name": "Release",
+      "name": "Release-Local-Windows-cl",
       "generator": "Ninja",
       "configurationType": "Release",
       "buildRoot": "${projectDir}\\out\\Release\\build",
@@ -23,14 +23,14 @@
       "buildCommandArgs": "-v"
     },
     {
-      "name": "Remote-Linux-GCC-tb-Debug",
+      "name": "Debug-Remote-Linux-gcc-tb",
       "generator": "Unix Makefiles",
       "configurationType": "Debug",
       "cmakeExecutable": "cmake",
       "remoteCopySourcesExclusionList": [ ".vs", ".git", "out" ],
       //"cmakeCommandArgs": "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc",
-      "buildCommandArgs": "-j -l 80",
       "ctestCommandArgs": "",
+      "buildCommandArgs": "-j -l 80",
       "inheritEnvironments": [ "linux_c++_x64" ],
       "remoteMachineName": "${defaultRemoteMachineName}",
       "remoteCMakeListsRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/Debug/src",
@@ -43,14 +43,14 @@
       "addressSanitizerEnabled": false
     },
     {
-      "name": "Remote-Linux-GCC-tb-Release",
+      "name": "Release-Remote-Linux-gcc-tb",
       "generator": "Unix Makefiles",
       "configurationType": "Release",
       "cmakeExecutable": "cmake",
       "remoteCopySourcesExclusionList": [ ".vs", ".git", "out" ],
       //"cmakeCommandArgs": "-DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc",
-      "buildCommandArgs": "-j -l 80",
       "ctestCommandArgs": "",
+      "buildCommandArgs": "-j -l 80",
       "inheritEnvironments": [ "linux_c++_x64" ],
       "remoteMachineName": "${defaultRemoteMachineName}",
       "remoteCMakeListsRoot": "$HOME/.vs/${projectDirName}/${workspaceHash}/Release/src",

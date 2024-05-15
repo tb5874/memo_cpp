@@ -3,6 +3,7 @@ set(ROOT_NAMESPACE doyouknow_float_use)
 message(STATUS "PROJECT_NAME : [${PROJECT_NAME}]")
 message(STATUS "ROOT_NAMESPACE : [${ROOT_NAMESPACE}]")
 
+set(LIB_BUILD False)
 
 ################################################################################
 # Language CXX
@@ -27,6 +28,7 @@ if(True)
         # The debugging information isn't included in the object files or executable, which makes them much smaller.
         # https://learn.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-170
         string(REGEX REPLACE "/Z[iI7]" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+        string(REGEX REPLACE "/Z[iI7]" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG}")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /Zi")
         set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
     endif()
@@ -37,8 +39,8 @@ if(True)
         # https://gcc.gnu.org/onlinedocs/gcc-11.4.0/gcc/Optimize-Options.html#index-O0
         string(REGEX REPLACE "-O[0123]" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
         string(REGEX REPLACE "-O[0123]" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-        set(CMAKE_CXX_FLAGS_DEBUG "-O0 ${CMAKE_CXX_FLAGS_DEBUG}")
-        set(CMAKE_CXX_FLAGS_RELEASE "-O0 ${CMAKE_CXX_FLAGS_RELEASE}")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O0")
     endif()
 
     message(STATUS "${PROJECT_NAME} : CMAKE_CXX_COMPILER set to [${CMAKE_CXX_COMPILER}]")
@@ -58,9 +60,7 @@ endif()
 # [ Type 1 ]
 # The GLOB_RECURSE mode will traverse all the subdirectories of the matched directory and match the files.
 file(GLOB_RECURSE cpp_file "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
-source_group("cpp_file" FILES ${cpp_file})
 file(GLOB_RECURSE hpp_file "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
-source_group("hpp_file" FILES ${hpp_file})
 
 # [ Type 2 ]
 #set(cpp_file
@@ -75,17 +75,27 @@ message(STATUS "${PROJECT_NAME} : all_file set to [${all_file}]")
 ################################################################################
 # Executable or Library
 ################################################################################
-add_executable(${PROJECT_NAME} ${all_file})
-#add_library(${PROJECT_NAME} SHARED ${all_file})
+if(LIB_BUILD)
+    add_library(${PROJECT_NAME} SHARED ${all_file})
+else()
+    add_executable(${PROJECT_NAME} ${all_file})
+endif()
 
 
 ################################################################################
 # User define flag
 ################################################################################
-list(APPEND USER_DEFINE_FLAG
-    # add flag
-    #EXPORT_FLAG
-)
+set(USER_DEFINE_FLAG "")
+if(LIB_BUILD)
+    list(APPEND USER_DEFINE_FLAG
+        # add flag
+        EXPORT_FLAG
+    )
+else()
+    list(APPEND USER_DEFINE_FLAG
+        # add flag
+    )
+endif()
 target_compile_definitions(${PROJECT_NAME} PRIVATE "${USER_DEFINE_FLAG}")
 message(STATUS "${PROJECT_NAME} : USER_DEFINE_FLAG set to [${USER_DEFINE_FLAG}]")
 
@@ -102,7 +112,6 @@ if(WIN32)
                 "$<$<CONFIG:Debug>:"
                     # add flag
                     "/std:c++17" # Tells the compiler to conform to a specific language standard.
-                    "/debug:all" # Generates complete debugging information.
                     "/Zi" # the compiler to generate symbolic debugging information in a program database (PDB) file for use with the debugger.
                     "/Od" # Disables all optimizations.
                     "/MDd" # Tells the linker to search for unresolved references in a multithreaded, dynamic-link runtime library. ( Debug )
@@ -114,6 +123,10 @@ if(WIN32)
                 # add flag
                 "/EHa" # Specifies the model of exception handling to be performed.
                 "/Wall" # Enables warning and error diagnostics.
+                "/fp:precise"
+                    # https://learn.microsoft.com/en-us/cpp/build/reference/fp-specify-floating-point-behavior?view=msvc-160
+                    # [ NaN, +infinity, -infinity, -0.0 ] are processed according to IEEE-754
+                    # if x is NaN, [ x != x ] evaluates to true
             ">"
         )
     endif()
@@ -135,6 +148,12 @@ elseif(UNIX)
                 ">"
                 # add flag
                 "-Wall"
+                "-frounding-math"
+                    # https://gcc.gnu.org/wiki/FloatingPointMath
+                    # infinities, NaNs, gradual underflow, signed zeros, exception flags and traps, setting rounding modes.
+                    # Compare with C99's #pragma STDC FENV ACCESS ON.
+                    # Warning! GCC currently assumes that the same rounding mode is in effect everywhere (PR34678).
+                    # use #include <cfenv>
             ">"
         )
     endif()
@@ -155,6 +174,7 @@ if(WIN32)
             "$<$<COMPILE_LANGUAGE:CXX>:"
                 "$<$<CONFIG:Debug>:"
                     # add flag
+                    "/DEBUG:FULL"
                 ">"
                 "$<$<CONFIG:Release>:"
                     # add flag
@@ -272,6 +292,21 @@ target_link_directories(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_DIRECTORIE
 message(STATUS "${PROJECT_NAME} : ADDITIONAL_LIBRARY_DIRECTORIES set to [${ADDITIONAL_LIBRARY_DIRECTORIES}]")
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ################################################################################
 # target_link_libraries() for use inside ~.lib function.
 ################################################################################
@@ -311,22 +346,25 @@ endif()
 target_link_libraries(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_LINK}")
 message(STATUS "${PROJECT_NAME} : ADDITIONAL_LIBRARY_LINK set to [${ADDITIONAL_LIBRARY_LINK}]")
 
+
 ################################################################################
 # Additional setting
 ################################################################################
-set(depend_project "doyouknow_float_std")
-add_dependencies(${PROJECT_NAME} "${depend_project}")
-#etc...
-
+set(depend_project_list "doyouknow_float_std")
+add_dependencies(${PROJECT_NAME} ${depend_project_list})
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
+# etc...
+
 
 ################################################################################
 # Post build - copy
 ################################################################################
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    # file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Debug")
     # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Debug/###.hpp")
-    # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Release/###.hpp")
 else()
-    # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Debug/###.hpp")
+    # file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Release")
     # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Release/###.hpp")
 endif()
+message(STATUS "${PROJECT_NAME} : CMAKE_CURRENT_SOURCE_DIR set to [${CMAKE_CURRENT_SOURCE_DIR}]")
+message(STATUS "${PROJECT_NAME} : CMAKE_SOURCE_DIR set to [${CMAKE_SOURCE_DIR}]")

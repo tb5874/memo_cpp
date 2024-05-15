@@ -1,6 +1,19 @@
+///////////////////////////////////////////////////////////
+
 #pragma once
 
+// https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-4-c4100?view=msvc-170
+// 4100
+// no reference variables warning.
+
+// https://learn.microsoft.com/en-us/cpp/error-messages/tool-errors/command-line-warning-d9025?view=msvc-170
+// D9025
+// overriding option warning.
+// EHs : only catch std c++ exception structure.
+// -> EHa : all catch exception.
+
 ///////////////////////////////////////////////////////////
+
 #if ( defined(_WIN32) || defined(_WIN64) )
 
 #ifdef EXPORT_FLAG
@@ -18,18 +31,24 @@
 #endif
 
 #endif
+///////////////////////////////////////////////////////////
 
 #include <doyouknow_float_std.hpp>
+
 extern "C" DLL_FLAG void*	doyouknow_float_get(void);
 extern "C" DLL_FLAG void	doyouknow_float_func01(void* get_ptr);
 extern "C" DLL_FLAG void	doyouknow_float_func02(void* get_ptr);
+extern "C" DLL_FLAG void	doyouknow_float_func03(void* get_ptr);
+
 ///////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////
+
 #include <string>
 #include <exception>
 #include <chrono>
 #include <iostream>
 
 int main(void);
+
 ///////////////////////////////////////////////////////////

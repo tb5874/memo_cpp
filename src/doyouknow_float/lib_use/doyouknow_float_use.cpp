@@ -9,6 +9,8 @@ int main(void) {
 
 		doyouknow_float_func02(get_ptr);
 
+		doyouknow_float_func03(get_ptr);
+
 		return 0;
 
 	}
