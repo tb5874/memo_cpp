@@ -1,5 +1,5 @@
-set(PROJECT_NAME doyouknow_use_float)
-set(ROOT_NAMESPACE doyouknow_use_float)
+set(PROJECT_NAME doyouknow_use_kaldi)
+set(ROOT_NAMESPACE doyouknow_use_kaldi)
 message(STATUS "PROJECT_NAME : [${PROJECT_NAME}]")
 message(STATUS "ROOT_NAMESPACE : [${ROOT_NAMESPACE}]")
 
@@ -323,7 +323,7 @@ if(WIN32)
                 # add library
             ">"
             # add library
-            "doyouknow_std_float"
+            "doyouknow_std_kaldi"
         )
     endif()
 
@@ -339,7 +339,7 @@ elseif(UNIX)
                 # add library
             ">"
             # add library
-            "doyouknow_std_float"
+            "doyouknow_std_kaldi"
         )
     endif()
 
@@ -355,9 +355,10 @@ message(STATUS "${PROJECT_NAME} : ADDITIONAL_LIBRARY_LINK set to [${ADDITIONAL_L
 if(LIB_BUILD)
     set(CMAKE_SHARED_LIBRARY_PREFIX "")
 else()
-    set(depend_project_list "doyouknow_std_float")
+    set(depend_project_list "doyouknow_std_kaldi")
     add_dependencies(${PROJECT_NAME} ${depend_project_list})
 endif()
+message(STATUS "${PROJECT_NAME} : depend_project_list set to [${depend_project_list}]")
 
 
 ################################################################################

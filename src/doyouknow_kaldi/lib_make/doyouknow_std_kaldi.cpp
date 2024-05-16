@@ -1,8 +1,8 @@
-#include <doyouknow_float.hpp>
+#include <doyouknow_kaldi.hpp>
 
-#include <doyouknow_float_std.hpp>
+#include <doyouknow_std_kaldi.hpp>
 
-void* doyouknow_float_get(void) {
+void* doyouknow_get(void) {
     try {
 
         void* get_ptr = new doyouknow_class;
@@ -21,7 +21,7 @@ void* doyouknow_float_get(void) {
 
 }
 
-void doyouknow_float_func01(void* get_ptr) {
+void doyouknow_func01(void* get_ptr) {
     try {
 
         ((doyouknow_class*)get_ptr)->func_01();
@@ -40,7 +40,7 @@ void doyouknow_float_func01(void* get_ptr) {
 
 }
 
-void doyouknow_float_func02(void* get_ptr) {
+void doyouknow_func02(void* get_ptr) {
     try {
 
         ((doyouknow_class*)get_ptr)->func_02();
@@ -59,7 +59,7 @@ void doyouknow_float_func02(void* get_ptr) {
 
 }
 
-void doyouknow_float_func03(void* get_ptr) {
+void doyouknow_func03(void* get_ptr) {
     try {
 
         ((doyouknow_class*)get_ptr)->func_03();

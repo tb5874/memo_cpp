@@ -31,24 +31,16 @@
 #endif
 
 #endif
-///////////////////////////////////////////////////////////
-
-#include <doyouknow_float_std.hpp>
-
-extern "C" DLL_FLAG void*	doyouknow_float_get(void);
-extern "C" DLL_FLAG void	doyouknow_float_func01(void* get_ptr);
-extern "C" DLL_FLAG void	doyouknow_float_func02(void* get_ptr);
-extern "C" DLL_FLAG void	doyouknow_float_func03(void* get_ptr);
-
-///////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////
 
 #include <string>
 #include <exception>
-#include <chrono>
 #include <iostream>
 
-int main(void);
+extern "C" DLL_FLAG void*	doyouknow_get(void);
+extern "C" DLL_FLAG void	doyouknow_func01(void* get_ptr);
+extern "C" DLL_FLAG void	doyouknow_func02(void* get_ptr);
+extern "C" DLL_FLAG void	doyouknow_func03(void* get_ptr);
 
 ///////////////////////////////////////////////////////////

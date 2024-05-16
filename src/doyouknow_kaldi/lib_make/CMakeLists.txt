@@ -1,9 +1,9 @@
-set(PROJECT_NAME doyouknow_use_float)
-set(ROOT_NAMESPACE doyouknow_use_float)
+set(PROJECT_NAME doyouknow_std_kaldi)
+set(ROOT_NAMESPACE doyouknow_std_kaldi)
 message(STATUS "PROJECT_NAME : [${PROJECT_NAME}]")
 message(STATUS "ROOT_NAMESPACE : [${ROOT_NAMESPACE}]")
 
-set(LIB_BUILD False)
+set(LIB_BUILD True)
 
 ################################################################################
 # Language CXX
@@ -323,7 +323,6 @@ if(WIN32)
                 # add library
             ">"
             # add library
-            "doyouknow_std_float"
         )
     endif()
 
@@ -339,7 +338,6 @@ elseif(UNIX)
                 # add library
             ">"
             # add library
-            "doyouknow_std_float"
         )
     endif()
 
@@ -355,7 +353,7 @@ message(STATUS "${PROJECT_NAME} : ADDITIONAL_LIBRARY_LINK set to [${ADDITIONAL_L
 if(LIB_BUILD)
     set(CMAKE_SHARED_LIBRARY_PREFIX "")
 else()
-    set(depend_project_list "doyouknow_std_float")
+    set(depend_project_list "")
     add_dependencies(${PROJECT_NAME} ${depend_project_list})
 endif()
 
@@ -365,10 +363,10 @@ endif()
 ################################################################################
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")    
     # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Debug/###.hpp")
-    # file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Debug")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Debug")
 else()
     # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Release/###.hpp")
-    # file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Release")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Release")
 endif()
 message(STATUS "${PROJECT_NAME} : CMAKE_CURRENT_SOURCE_DIR set to [${CMAKE_CURRENT_SOURCE_DIR}]")
 message(STATUS "${PROJECT_NAME} : CMAKE_SOURCE_DIR set to [${CMAKE_SOURCE_DIR}]")

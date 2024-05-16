@@ -1,5 +1,5 @@
-set(PROJECT_NAME doyouknow_float_std)
-set(ROOT_NAMESPACE doyouknow_float_std)
+set(PROJECT_NAME doyouknow_std_float)
+set(ROOT_NAMESPACE doyouknow_std_float)
 message(STATUS "PROJECT_NAME : [${PROJECT_NAME}]")
 message(STATUS "ROOT_NAMESPACE : [${ROOT_NAMESPACE}]")
 
@@ -207,7 +207,7 @@ message(STATUS "${PROJECT_NAME} : LINK_OPTIONS set to [${LINK_OPTIONS}]")
 
 
 ################################################################################
-# target_include_directories() for use #include <~.h> 
+# target_include_directories() for use #include <~.hpp> 
 ################################################################################
 if(WIN32)
 
@@ -216,11 +216,15 @@ if(WIN32)
         list(APPEND ADDITIONAL_INCLUDE_DIRECTORIES
             "$<$<CONFIG:Debug>:"
                 # add directory path
-                "${CMAKE_SOURCE_DIR}/out/Debug" # for include library header file "~.hpp". (for know, inside "~.so" function name)"
+                "${CMAKE_SOURCE_DIR}/out/Debug"
+                    # for include external library header file "~.hpp". (for know, inside "~.so, ~.dll" function name)"
+                    # for this, user need to copy "~.hpp" to path
             ">"
             "$<$<CONFIG:Release>:"
                 # add directory path
-                "${CMAKE_SOURCE_DIR}/out/Release" # for include library header file "~.hpp". (for know, inside "~.so" function name)"
+                "${CMAKE_SOURCE_DIR}/out/Release"
+                    # for include external library header file "~.hpp". (for know, inside "~.so, ~.dll" function name)"
+                    # for this, user need to copy "~.hpp" to path
             ">"
             # add directory path
             "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -234,11 +238,15 @@ elseif(UNIX)
         list(APPEND ADDITIONAL_INCLUDE_DIRECTORIES
             "$<$<CONFIG:Debug>:"
                 # add directory path
-                "${CMAKE_SOURCE_DIR}/out/Debug" # for include library header file "~.hpp". (for know, inside "~.so" function name)"
+                "${CMAKE_SOURCE_DIR}/out/Debug"
+                    # for include external library header file "~.hpp". (for know, inside "~.so, ~.dll" function name)"
+                    # for this, user need to copy "~.hpp" to path
             ">"
             "$<$<CONFIG:Release>:"
                 # add directory path
-                "${CMAKE_SOURCE_DIR}/out/Release" # for include library header file "~.hpp". (for know, inside "~.so" function name)"
+                "${CMAKE_SOURCE_DIR}/out/Release"
+                    # for include external library header file "~.hpp". (for know, inside "~.so, ~.dll" function name)"
+                    # for this, user need to copy "~.hpp" to path
             ">"
             # add directory path
             "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -251,7 +259,7 @@ message(STATUS "${PROJECT_NAME} : ADDITIONAL_INCLUDE_DIRECTORIES set to [${ADDIT
 
 
 ################################################################################
-# target_link_directories() for include ~.lib file.
+# target_link_directories() for include ~.so, ~.dll file.
 ################################################################################
 if(WIN32)
 
@@ -260,11 +268,15 @@ if(WIN32)
         list(APPEND ADDITIONAL_LIBRARY_DIRECTORIES
             "$<$<CONFIG:Debug>:"
                 # add directory path
-                "${CMAKE_SOURCE_DIR}/out/Debug" # for include library "~.so ~.dll"
+                "${CMAKE_SOURCE_DIR}/out/Debug"
+                    # for include external library file "~.so, ~.dll"
+                    # for this, user need to copy "~.so, ~.dll" to path
             ">"
             "$<$<CONFIG:Release>:"
                 # add directory path
-                "${CMAKE_SOURCE_DIR}/out/Release" # for include library "~.so ~.dll"
+                "${CMAKE_SOURCE_DIR}/out/Release"
+                    # for include external library file "~.so, ~.dll"
+                    # for this, user need to copy "~.so, ~.dll" to path
             ">"
             # add directory path
         )
@@ -277,11 +289,15 @@ elseif(UNIX)
         list(APPEND ADDITIONAL_LIBRARY_DIRECTORIES
             "$<$<CONFIG:Debug>:"
                 # add directory path
-                "${CMAKE_SOURCE_DIR}/out/Debug" # for include library "~.so ~.dll"
+                "${CMAKE_SOURCE_DIR}/out/Debug"
+                    # for include external library file "~.so, ~.dll"
+                    # for this, user need to copy "~.so, ~.dll" to path
             ">"
             "$<$<CONFIG:Release>:"
                 # add directory path
-                "${CMAKE_SOURCE_DIR}/out/Release" # for include library "~.so ~.dll"
+                "${CMAKE_SOURCE_DIR}/out/Release"
+                    # for include external library file "~.so, ~.dll"
+                    # for this, user need to copy "~.so, ~.dll" to path
             ">"
             # add directory path
         )
@@ -292,23 +308,8 @@ target_link_directories(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_DIRECTORIE
 message(STATUS "${PROJECT_NAME} : ADDITIONAL_LIBRARY_DIRECTORIES set to [${ADDITIONAL_LIBRARY_DIRECTORIES}]")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ################################################################################
-# target_link_libraries() for use inside ~.lib function.
+# target_link_libraries() for use ~.so, ~.dll function.
 ################################################################################
 if(WIN32)
 
@@ -348,23 +349,24 @@ message(STATUS "${PROJECT_NAME} : ADDITIONAL_LIBRARY_LINK set to [${ADDITIONAL_L
 ################################################################################
 # Additional setting
 ################################################################################
-#set(depend_project_list "")
-#add_dependencies(${PROJECT_NAME} ${depend_project_list})
-set(CMAKE_SHARED_LIBRARY_PREFIX "")
 # etc...
+if(LIB_BUILD)
+    set(CMAKE_SHARED_LIBRARY_PREFIX "")
+else()
+    set(depend_project_list "")
+    add_dependencies(${PROJECT_NAME} ${depend_project_list})
+endif()
 
 
 ################################################################################
 # Post build - copy
 ################################################################################
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    # file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Debug")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")    
     # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Debug/###.hpp")
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/doyouknow_float_std.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Debug")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Debug")
 else()
-    # file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Release")
     # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Release/###.hpp")
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/doyouknow_float_std.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Release")
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Release")
 endif()
 message(STATUS "${PROJECT_NAME} : CMAKE_CURRENT_SOURCE_DIR set to [${CMAKE_CURRENT_SOURCE_DIR}]")
 message(STATUS "${PROJECT_NAME} : CMAKE_SOURCE_DIR set to [${CMAKE_SOURCE_DIR}]")
