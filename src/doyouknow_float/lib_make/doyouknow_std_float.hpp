@@ -42,5 +42,6 @@ extern "C" DLL_FLAG void*	doyouknow_float_get(void);
 extern "C" DLL_FLAG void	doyouknow_float_func01(void* get_ptr);
 extern "C" DLL_FLAG void	doyouknow_float_func02(void* get_ptr);
 extern "C" DLL_FLAG void	doyouknow_float_func03(void* get_ptr);
+extern "C" DLL_FLAG void	doyouknow_float_func04(void* get_ptr);
 
 ///////////////////////////////////////////////////////////

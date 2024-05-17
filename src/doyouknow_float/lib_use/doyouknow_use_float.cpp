@@ -6,10 +6,9 @@ int main(void) {
 		void* get_ptr = doyouknow_float_get();
 
 		doyouknow_float_func01(get_ptr);
-
 		doyouknow_float_func02(get_ptr);
-
 		doyouknow_float_func03(get_ptr);
+		doyouknow_float_func04(get_ptr);
 
 		return 0;
 

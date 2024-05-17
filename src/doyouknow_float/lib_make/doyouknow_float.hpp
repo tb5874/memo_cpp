@@ -14,11 +14,13 @@
 
 ///////////////////////////////////////////////////////////
 
-#include <cfenv>
+#include <cfenv>	// std::fesetround()
 #include <string>
 #include <exception>
 #include <chrono>
 #include <iostream>
+#include <complex>	// std::log()
+#include <limits>	// std::numeric_limits<float>::epsilon()
 
 class doyouknow_class
 {
@@ -43,5 +45,9 @@ class doyouknow_class
 		void func_03(void);
 		void func_fp16_round(int iter, float fp32_a, float fp32_b);
 		void func_fp16_unit(int iter, float fp32_a, float fp32_b);
+
+	public:
+		void func_04(void);
+		void func_fp32_epsilon(void);
 
 };

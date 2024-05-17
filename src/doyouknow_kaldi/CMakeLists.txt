@@ -5,7 +5,7 @@ add_subdirectory(lib_make)
 add_subdirectory(lib_use)
 
 ################################################################################
-# Readme
+# kaldi
 ################################################################################
 
 # https://github.com/kaldi-asr/kaldi
@@ -31,6 +31,7 @@ add_subdirectory(lib_use)
 		# make depend -j 8
 		# make -j 8
 
+
 # CMakeLists.txt
 	# target_include_directories()
 		# "/home/user/ ### git clone path ### /kaldi/src"
@@ -50,16 +51,17 @@ add_subdirectory(lib_use)
 		# "kaldi-matrix"
 		# "fst"
 
-# For Binary Build Result !!! : -->
-# Binary Build Result don't know, where kaldi library ...
-# So, system need to know kaldi library path
-	# cd /etc/ld.so.conf.d
-		# sudo vi kaldi_test.conf
-			# /home/user/ ### git clone path ### /kaldi/src/lib
-			# /home/user/ ### git clone path ### /kaldi/tools/openfst-1.7.2/lib
-		# sudo ldconfig
-# Or you can copy kaldi library to Binary Build Result path.	
-    # file(COPY "/home/user/ ### git clone path ### /kaldi/src/lib/libkaldi-chain.so" DESTINATION "${CMAKE_BINARY_DIR}")
-	# file(COPY "/home/user/ ### git clone path ### /kaldi/src/lib/ ### .so" DESTINATION "${CMAKE_BINARY_DIR}")
-	# ...
-# For Binary Build Result !!! : <--
+
+# For Binary Build Result
+	# Binary Build Result don't know, where kaldi library ...
+	# So, system need to know kaldi library path
+		# cd /etc/ld.so.conf.d
+			# sudo vi kaldi_test.conf
+				# /home/user/ ### git clone path ### /kaldi/src/lib
+				# /home/user/ ### git clone path ### /kaldi/tools/openfst-1.7.2/lib
+			# sudo ldconfig
+	# Or you can copy kaldi library to Binary Build Result path.	
+		# file(COPY "/home/user/ ### git clone path ### /kaldi/src/lib/libkaldi-chain.so" DESTINATION "${CMAKE_BINARY_DIR}")
+		# file(COPY "/home/user/ ### git clone path ### /kaldi/src/lib/ ### .so" DESTINATION "${CMAKE_BINARY_DIR}")
+		# ...
+

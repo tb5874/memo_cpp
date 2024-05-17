@@ -77,3 +77,22 @@ void doyouknow_float_func03(void* get_ptr) {
     return;
 
 }
+
+void doyouknow_float_func04(void* get_ptr) {
+    try {
+
+        ((doyouknow_class*)get_ptr)->func_04();
+
+        return;
+
+    }
+    catch (std::exception& e) {
+        printf("Func : %s() : Exception : %s\n", ((std::string)__func__).c_str(), e.what());
+    }
+    catch (...) {
+        printf("Func : %s() : Exception : unknown exception\n", ((std::string)__func__).c_str());
+    }
+
+    return;
+
+}

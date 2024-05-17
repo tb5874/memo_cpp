@@ -378,3 +378,69 @@ void doyouknow_class::func_fp16_unit(int iter, float fp32_a, float fp32_b) {
     return;
 
 }
+
+void doyouknow_class::func_04(void) {
+    try {
+
+        printf("\ndo you know float ? : %s\n", ((std::string)__func__).c_str());
+
+        set_fpround(FE_TONEAREST);
+
+        func_fp32_epsilon();
+
+        return;
+
+    }
+    catch (std::exception& e) {
+        printf("C++ Exception( std::exception ) : %s\n", e.what());
+    }
+    catch (...) {
+        printf("C++ Exception( ... ) : Not std::exception\n");
+    }
+
+    return;
+
+}
+
+void doyouknow_class::func_fp32_epsilon(void) {
+    try {
+
+        // constexpr variable is " initialize and never change variable "
+        constexpr float fp32_epsilon = std::numeric_limits<float>::epsilon();
+        float fp32_log_epsilon = std::log(fp32_epsilon);
+
+        printf("fp32_epsilon         : %15.10f\n", fp32_epsilon);
+        printf("fp32_log_epsilon     : %15.10f\n", fp32_log_epsilon);
+
+        float fp32_exponential = std::exp(1.0f);
+        float fp32_log_exponential = std::log(fp32_exponential);
+
+        printf("fp32_exponential     : %15.10f\n", fp32_exponential);
+        printf("fp32_log_exponential : %15.10f\n", fp32_log_exponential);
+
+        printf("\n");
+        printf("how to use fp32_epsilon ?\n");
+        float fp32_zero = 0.0f;
+
+        if (fp32_zero < fp32_epsilon) {
+            printf("fp32_zero                 : %15.10f\n", fp32_zero);
+            printf("std::log(fp32_zero)       : %15.10f\n", std::log(fp32_zero));
+            fp32_zero = fp32_epsilon;
+            printf("fp32_epsilon to fp32_zero : %15.10f\n", fp32_zero);
+            printf("std::log(fp32_zero)       : %15.10f\n", std::log(fp32_zero));
+            printf("\n");
+        }
+
+        return;
+
+    }
+    catch (std::exception& e) {
+        printf("C++ Exception( std::exception ) : %s\n", e.what());
+    }
+    catch (...) {
+        printf("C++ Exception( ... ) : Not std::exception\n");
+    }
+
+    return;
+
+}
