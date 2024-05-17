@@ -1,39 +1,27 @@
-///////////////////////////////////////////////////////////
-
 #pragma once
 
-// https://learn.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-4-c4100?view=msvc-170
-	// 4100
-	// no reference variables warning.
+#include <feat/feature-fbank.h>
+#include <base/kaldi-math.h>
+#include <matrix/kaldi-matrix-inl.h>
+#include <feat/wave-reader.h>
+#include <fst/types.h>
 
-// https://learn.microsoft.com/en-us/cpp/error-messages/tool-errors/command-line-warning-d9025?view=msvc-170
-	// D9025
-	// option overriding warning.
-	// [ example ] EHs -> EHa
-	// EHs : only catch std c++ exception structure.
-	// EHa : all catch exception.
-
-///////////////////////////////////////////////////////////
-
-#include <cfenv>
 #include <string>
 #include <exception>
 #include <chrono>
 #include <iostream>
 
-class doyouknow_class
-{
+class doyouknow_class{
+
 	public:
 		doyouknow_class(void);
 		~doyouknow_class(void);
 
 	public:
 		void func_01(void);
-
-	public:
 		void func_02(void);
 
 	public:
-		void func_03(void);
+		float read_fp32(std::istream& get_fs);
 
 };

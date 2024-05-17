@@ -1,12 +1,12 @@
-#include <doyouknow_use_kaldi.hpp>
+#include <libuse_float.hpp>
 
 int main(void) {
 	try {
 
 		void* get_ptr = doyouknow_get();
+
 		doyouknow_func01(get_ptr);
 		doyouknow_func02(get_ptr);
-		doyouknow_func03(get_ptr);
 
 		return 0;
 

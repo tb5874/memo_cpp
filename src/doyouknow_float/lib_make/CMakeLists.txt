@@ -1,9 +1,27 @@
-set(PROJECT_NAME doyouknow_std_float)
-set(ROOT_NAMESPACE doyouknow_std_float)
-message(STATUS "PROJECT_NAME : [${PROJECT_NAME}]")
-message(STATUS "ROOT_NAMESPACE : [${ROOT_NAMESPACE}]")
+####################################################################################################################
+
+ ##  ##   ######   ######   ####              ######    ####              ####    ######   ######   ##  ##   #####   
+ ### ##   ##       ##       ## ##               ##     ##  ##            ##       ##         ##     ##  ##   ##  ##  
+ ######   #####    #####    ##  ##              ##     ##  ##             ####    #####      ##     ##  ##   ##  ##  
+ ######   ##       ##       ##  ##              ##     ##  ##                ##   ##         ##     ##  ##   #####   
+ ## ###   ##       ##       ## ##               ##     ##  ##                ##   ##         ##     ##  ##   ##      
+ ##  ##   ######   ######   ####                ##      ####              ####    ######     ##     ######   ##    
+
+##### set(PROJECT_NAME #####)     #####
+##### set(ROOT_NAMESPACE #####)   #####
+##### set(LIB_BUILD True or False)#####
+##### target_link_libraries()     #####
+##### set(depend_project_list "") #####
+
+####################################################################################################################
+
+set(PROJECT_NAME libstandard_float)
+set(ROOT_NAMESPACE libstandard_float)
+message(STATUS "PROJECT_NAME set to : [${PROJECT_NAME}]")
+message(STATUS "ROOT_NAMESPACE set to : [${ROOT_NAMESPACE}]")
 
 set(LIB_BUILD True)
+message(STATUS "LIB_BUILD set to : [${LIB_BUILD}]")
 
 ################################################################################
 # Language CXX
@@ -23,10 +41,6 @@ if(True)
     ################################################################################
 
     if(WIN32)
-        # /ZI /Z7 -> /Zi
-        # The /Zi option produces a separate PDB file that contains all the symbolic debugging information for use with the debugger.
-        # The debugging information isn't included in the object files or executable, which makes them much smaller.
-        # https://learn.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-170
         string(REGEX REPLACE "/Z[iI7]" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
         string(REGEX REPLACE "/Z[iI7]" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG}")
         set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
@@ -34,13 +48,10 @@ if(True)
     endif()
 
     if(UNIX)
-        # O1 O2 O3 -> O0
-        # Optimize Level set 0
-        # https://gcc.gnu.org/onlinedocs/gcc-11.4.0/gcc/Optimize-Options.html#index-O0
         string(REGEX REPLACE "-O[0123]" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
         string(REGEX REPLACE "-O[0123]" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O0")
+        set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
     endif()
 
     message(STATUS "${PROJECT_NAME} : CMAKE_CXX_COMPILER set to [${CMAKE_CXX_COMPILER}]")
@@ -112,13 +123,14 @@ if(WIN32)
                 "$<$<CONFIG:Debug>:"
                     # add flag
                     "/std:c++17" # Tells the compiler to conform to a specific language standard.
-                    "/Zi" # the compiler to generate symbolic debugging information in a program database (PDB) file for use with the debugger.
+                    "/Zi"
+                        # https://learn.microsoft.com/en-us/cpp/build/reference/z7-zi-zi-debug-information-format?view=msvc-170
+                        # The /Zi option produces a separate PDB file that contains all the symbolic debugging information for use with the debugger.
+                        # The debugging information isn't included in the object files or executable, which makes them much smaller.
                     "/Od" # Disables all optimizations.
-                    "/MDd" # Tells the linker to search for unresolved references in a multithreaded, dynamic-link runtime library. ( Debug )
                 ">"
                 "$<$<CONFIG:Release>:"
                     # add flag
-                    "/MD" # Tells the linker to search for unresolved references in a multithreaded, dynamic-link runtime library. ( Release )
                 ">"
                 # add flag
                 "/EHa" # Specifies the model of exception handling to be performed.
@@ -129,6 +141,24 @@ if(WIN32)
                     # if x is NaN, [ x != x ] evaluates to true
             ">"
         )
+
+        if(LIB_BUILD)
+            list(APPEND COMPILE_OPTIONS
+                "$<$<COMPILE_LANGUAGE:CXX>:"
+                    "$<$<CONFIG:Debug>:"
+                        "/MDd"
+                            # https://learn.microsoft.com/en-us/cpp/build/reference/md-mt-ld-use-run-time-library?view=msvc-160
+                            # create dynamic linking library ( Debug )
+                    ">"
+                    "$<$<CONFIG:Release>:"
+                        "/MD"
+                            # https://learn.microsoft.com/en-us/cpp/build/reference/md-mt-ld-use-run-time-library?view=msvc-160
+                            # create dynamic linking library ( Release )
+                    ">"
+                ">"
+            )
+        endif()
+
     endif()
 
 elseif(UNIX)
@@ -140,8 +170,11 @@ elseif(UNIX)
                 "$<$<CONFIG:Debug>:"
                     # add flag
                     "-std=c++17" # Tells the compiler to conform to a specific language standard.
-                    "-g" # Produce debugging information in the operating system¡¯s native format
-                    "-O0" # Reduce compilation time and make debugging produce the expected results. This is the default.
+                    "-g" # Produce debugging information in the operating system native format
+                    "-O0"
+                        # https://gcc.gnu.org/onlinedocs/gcc-11.4.0/gcc/Optimize-Options.html#index-O0
+                        # Optimize Level set 0
+                        # Reduce compilation time and make debugging produce the expected results. This is the default.
                 ">"
                 "$<$<CONFIG:Release>:"
                     # add flag
@@ -207,7 +240,7 @@ message(STATUS "${PROJECT_NAME} : LINK_OPTIONS set to [${LINK_OPTIONS}]")
 
 
 ################################################################################
-# target_include_directories() for use #include <~.hpp> 
+# target_include_directories() : for use #include <~.hpp> 
 ################################################################################
 if(WIN32)
 
@@ -217,14 +250,10 @@ if(WIN32)
             "$<$<CONFIG:Debug>:"
                 # add directory path
                 "${CMAKE_SOURCE_DIR}/out/Debug"
-                    # for include external library header file "~.hpp". (for know, inside "~.so, ~.dll" function name)"
-                    # for this, user need to copy "~.hpp" to path
             ">"
             "$<$<CONFIG:Release>:"
                 # add directory path
                 "${CMAKE_SOURCE_DIR}/out/Release"
-                    # for include external library header file "~.hpp". (for know, inside "~.so, ~.dll" function name)"
-                    # for this, user need to copy "~.hpp" to path
             ">"
             # add directory path
             "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -239,14 +268,10 @@ elseif(UNIX)
             "$<$<CONFIG:Debug>:"
                 # add directory path
                 "${CMAKE_SOURCE_DIR}/out/Debug"
-                    # for include external library header file "~.hpp". (for know, inside "~.so, ~.dll" function name)"
-                    # for this, user need to copy "~.hpp" to path
             ">"
             "$<$<CONFIG:Release>:"
                 # add directory path
                 "${CMAKE_SOURCE_DIR}/out/Release"
-                    # for include external library header file "~.hpp". (for know, inside "~.so, ~.dll" function name)"
-                    # for this, user need to copy "~.hpp" to path
             ">"
             # add directory path
             "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -259,7 +284,7 @@ message(STATUS "${PROJECT_NAME} : ADDITIONAL_INCLUDE_DIRECTORIES set to [${ADDIT
 
 
 ################################################################################
-# target_link_directories() for include ~.so, ~.dll file.
+# target_link_directories() : for know where is external library file (~.so, ~.dll)
 ################################################################################
 if(WIN32)
 
@@ -268,15 +293,11 @@ if(WIN32)
         list(APPEND ADDITIONAL_LIBRARY_DIRECTORIES
             "$<$<CONFIG:Debug>:"
                 # add directory path
-                "${CMAKE_SOURCE_DIR}/out/Debug"
-                    # for include external library file "~.so, ~.dll"
-                    # for this, user need to copy "~.so, ~.dll" to path
+                "${CMAKE_SOURCE_DIR}/out/Debug"                    
             ">"
             "$<$<CONFIG:Release>:"
                 # add directory path
                 "${CMAKE_SOURCE_DIR}/out/Release"
-                    # for include external library file "~.so, ~.dll"
-                    # for this, user need to copy "~.so, ~.dll" to path
             ">"
             # add directory path
         )
@@ -290,14 +311,10 @@ elseif(UNIX)
             "$<$<CONFIG:Debug>:"
                 # add directory path
                 "${CMAKE_SOURCE_DIR}/out/Debug"
-                    # for include external library file "~.so, ~.dll"
-                    # for this, user need to copy "~.so, ~.dll" to path
             ">"
             "$<$<CONFIG:Release>:"
                 # add directory path
                 "${CMAKE_SOURCE_DIR}/out/Release"
-                    # for include external library file "~.so, ~.dll"
-                    # for this, user need to copy "~.so, ~.dll" to path
             ">"
             # add directory path
         )
@@ -309,7 +326,7 @@ message(STATUS "${PROJECT_NAME} : ADDITIONAL_LIBRARY_DIRECTORIES set to [${ADDIT
 
 
 ################################################################################
-# target_link_libraries() for use ~.so, ~.dll function.
+# target_link_libraries() : for use external library file's function (~.so, ~.dll)
 ################################################################################
 if(WIN32)
 
@@ -349,24 +366,27 @@ message(STATUS "${PROJECT_NAME} : ADDITIONAL_LIBRARY_LINK set to [${ADDITIONAL_L
 ################################################################################
 # Additional setting
 ################################################################################
-# etc...
 if(LIB_BUILD)
     set(CMAKE_SHARED_LIBRARY_PREFIX "")
 else()
-    set(depend_project_list "")
-    add_dependencies(${PROJECT_NAME} ${depend_project_list})
+    # set(depend_project_list "")
+    # add_dependencies(${PROJECT_NAME} ${depend_project_list})
 endif()
 
 
 ################################################################################
 # Post build - copy
 ################################################################################
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")    
-    # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Debug/###.hpp")
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Debug")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Debug/###.hpp")    
+    if(LIB_BUILD)
+        file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Debug")
+    endif()
 else()
     # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Release/###.hpp")
-    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Release")
+    if(LIB_BUILD)
+        file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Release")
+    endif()
 endif()
 message(STATUS "${PROJECT_NAME} : CMAKE_CURRENT_SOURCE_DIR set to [${CMAKE_CURRENT_SOURCE_DIR}]")
 message(STATUS "${PROJECT_NAME} : CMAKE_SOURCE_DIR set to [${CMAKE_SOURCE_DIR}]")
