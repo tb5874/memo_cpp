@@ -22,6 +22,8 @@ class doyouknow_class{
 		void func_02(void);
 
 	public:
+		void read_char8(std::istream& get_fs, int get_count);
+		int read_int32(std::istream& get_fs);
 		float read_fp32(std::istream& get_fs);
 
 };

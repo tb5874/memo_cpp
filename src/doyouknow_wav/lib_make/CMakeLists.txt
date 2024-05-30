@@ -15,12 +15,12 @@
 
 ####################################################################################################################
 
-set(PROJECT_NAME #####)
-set(ROOT_NAMESPACE #####)
+set(PROJECT_NAME libstandard_wav)
+set(ROOT_NAMESPACE libstandard_wav)
 message(STATUS "PROJECT_NAME set to : [${PROJECT_NAME}]")
 message(STATUS "ROOT_NAMESPACE set to : [${ROOT_NAMESPACE}]")
 
-set(LIB_BUILD True or False)
+set(LIB_BUILD True)
 message(STATUS "LIB_BUILD set to : [${LIB_BUILD}]")
 
 ################################################################################

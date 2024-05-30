@@ -330,7 +330,7 @@ message(STATUS "${PROJECT_NAME} : ADDITIONAL_LIBRARY_DIRECTORIES set to [${ADDIT
 
 
 ################################################################################
-# target_link_libraries() : for use external library file's function (~.so, ~.dll)
+# target_link_libraries() : for use external library (~.so, ~.dll)
 ################################################################################
 if(WIN32)
 

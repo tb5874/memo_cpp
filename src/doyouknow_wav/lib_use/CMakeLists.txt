@@ -15,12 +15,12 @@
 
 ####################################################################################################################
 
-set(PROJECT_NAME #####)
-set(ROOT_NAMESPACE #####)
+set(PROJECT_NAME libuse_wav)
+set(ROOT_NAMESPACE libuse_wav)
 message(STATUS "PROJECT_NAME set to : [${PROJECT_NAME}]")
 message(STATUS "ROOT_NAMESPACE set to : [${ROOT_NAMESPACE}]")
 
-set(LIB_BUILD True or False)
+set(LIB_BUILD False)
 message(STATUS "LIB_BUILD set to : [${LIB_BUILD}]")
 
 ################################################################################
@@ -340,6 +340,7 @@ if(WIN32)
                 # add library
             ">"
             # add library
+            "libstandard_wav"
         )
     endif()
 
@@ -355,6 +356,7 @@ elseif(UNIX)
                 # add library
             ">"
             # add library
+            "libstandard_wav"
         )
     endif()
 
@@ -369,8 +371,8 @@ message(STATUS "${PROJECT_NAME} : ADDITIONAL_LIBRARY_LINK set to [${ADDITIONAL_L
 if(LIB_BUILD)
     set(CMAKE_SHARED_LIBRARY_PREFIX "")
 else()
-    # set(depend_project_list "")
-    # add_dependencies(${PROJECT_NAME} ${depend_project_list})
+    set(depend_project_list "libstandard_wav")
+    add_dependencies(${PROJECT_NAME} ${depend_project_list})
 endif()
 
 

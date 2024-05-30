@@ -2,6 +2,7 @@
 
 ################################################################################
 
+# visual studio 2019
 # tool -> option -> platform -> connect admin -> add
     # ip, port, linux username, linux userpassword
 
