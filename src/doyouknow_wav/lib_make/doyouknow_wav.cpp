@@ -15,31 +15,42 @@ void doyouknow_class::func_01(void) {
         printf("[ %s ]\n", ((std::string)__func__).c_str());
         printf("do you know ?\n");
 
-        // https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples.html
+		std::string file_path = "C:\\Users\\k\\Desktop\\temp_wav\\M1F1-Alaw-AFsp.wav";
+			// https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples.html
 			// pcm format 6, channel 2, unsigned char, a-law
-        std::string file_path = "C:\\Users\\k\\Desktop\\temp_wav\\M1F1-Alaw-AFsp.wav";
 
 		// wav open
 		void* wav_buf = nullptr;
 		str_uint64 wav_args;
 		wav_open(file_path, wav_buf, wav_args);
 		wav_save(file_path + "_original.wav", wav_buf, wav_args);
-
+		std::free(wav_buf);
+		wav_buf = nullptr;
 
 		// save test : seperate channel save
 		uint16 ch_target = 0;
 		void* ch_buf = nullptr;
 		str_uint64 ch_args;
+		wav_open(file_path, wav_buf, wav_args);
 		wav_ch(wav_buf, wav_args, ch_target, ch_buf, ch_args);
 		wav_save(file_path + "_ch" + std::to_string(ch_target) + ".wav", ch_buf, ch_args);
+		std::free(wav_buf);
+		std::free(ch_buf);
+		wav_buf = nullptr;
+		ch_buf = nullptr;
 
 
 		// save test : resampling save
-		float re_target = 16000.0f;
+		float re_target = 32000.0f;
 		void* re_buf = nullptr;
 		str_uint64 re_args;
+		wav_open(file_path, wav_buf, wav_args);
 		wav_re(wav_buf, wav_args, re_target, re_buf, re_args);
-		wav_save(file_path + "_resampling" + std::to_string(re_target) + ".wav", re_buf, re_args);
+		wav_save(file_path + "_resampling" + std::to_string((uint32)re_target) + ".wav", re_buf, re_args);
+		std::free(wav_buf);
+		std::free(re_buf);
+		wav_buf = nullptr;
+		re_buf = nullptr;
 
 
 		// just sleep ... 
@@ -118,6 +129,8 @@ void doyouknow_class::wav_open(std::string& get_path, void*& wav_buf, str_uint64
 		if (wav_buf != nullptr) {
 			std::free(wav_buf);
 		}
+
+		wav_args.clear();
 
         bool printf_flag = true;
 
@@ -377,7 +390,6 @@ void doyouknow_class::wav_open(std::string& get_path, void*& wav_buf, str_uint64
 
 		}
 
-		wav_args.clear();
 		wav_args.add("pcm_format", pcm_format);
 		wav_args.add("wav_channel", wav_channel);
 		wav_args.add("sample_rate", sample_rate);
@@ -386,6 +398,8 @@ void doyouknow_class::wav_open(std::string& get_path, void*& wav_buf, str_uint64
 		wav_args.add("bit_per_sample", bit_per_sample);
 		wav_args.add("data_byte", data_byte);
 		wav_args.show();
+
+		wav_fs.close();
 
 	}
 	catch (std::exception& e) {
@@ -466,6 +480,8 @@ void doyouknow_class::wav_ch(void*& get_buf, str_uint64& get_args, uint16 ch_tar
 			std::free(ch_buf);
 		}
 
+		ch_args.clear();
+
 		uint16 pcm_format = get_args["pcm_format"];
 		uint16 wav_channel = get_args["wav_channel"];
 		uint32 sample_rate = get_args["sample_rate"];
@@ -516,7 +532,6 @@ void doyouknow_class::wav_ch(void*& get_buf, str_uint64& get_args, uint16 ch_tar
 			throw std::runtime_error("need to update : pcm format");
 		}
 
-		ch_args.clear();
 		ch_args.add("pcm_format", pcm_format);
 		ch_args.add("wav_channel", 1);
 		ch_args.add("sample_rate", sample_rate);
@@ -545,64 +560,175 @@ void doyouknow_class::wav_re(void*& get_buf, str_uint64& get_args, float re_targ
 			std::free(re_buf);
 		}
 
-		//float play_sec = (float)data_count / (float)wav_channel / (float)sample_rate;
-		//float target_rate = 16000.0f;
-		//uint32 result_count = play_sec * target_rate;
-		//uint32 result_byte = result_count * (bit_per_sample / 8) * wav_channel;
-		//
-		//int frag_now = 0;
-		//int frag_next = 0;
-		//float frag = 0.0f;
-		//float frag_sum = 0.0f;
-		//float c2r_ratio = 0.0f;
-		//// up_sampling
-		//if (sample_rate < target_rate) {
-		//	c2r_ratio = (float)result_sample / (float)ch_sample;
-		//	for (int idx = 0; idx < result_sample; idx++) {
-		//		frag_now = idx / c2r_ratio;
-		//		frag_next = (idx + 1) / c2r_ratio;
-		//		if (frag_now == frag_next) {
-		//			frag = 1.0f;
-		//			((float*)result_buf)[idx] = ((float*)ch_buf)[frag_now] * frag;
-		//		}
-		//		else {
-		//			frag = (frag_now + 1) * c2r_ratio - idx;
-		//			((float*)result_buf)[idx] = ((float*)ch_buf)[frag_now] * frag;
-		//
-		//			// if idx is last, do not calculate next.
-		//			if (idx != (result_sample - 1)) {
-		//				frag = (1.0f - frag);
-		//				((float*)result_buf)[idx] += ((float*)ch_buf)[frag_next] * frag;
-		//			}
-		//		}
-		//	}
-		//}
-		//// down_sampling
-		//else {
-		//	c2r_ratio = (float)ch_sample / (float)result_sample;
-		//	for (int idx = 0; idx < ch_sample; idx++) {
-		//		frag_now = idx / c2r_ratio;
-		//		frag_next = (idx + 1) / c2r_ratio;
-		//		if (frag_now == frag_next) {
-		//			frag = 1.0f;
-		//			((float*)result_buf)[frag_now] += ((float*)ch_buf)[idx] * frag;
-		//			frag_sum += frag;
-		//		}
-		//		else {
-		//			frag = (frag_now + 1) * c2r_ratio - idx;
-		//			((float*)result_buf)[frag_now] += ((float*)ch_buf)[idx] * frag;
-		//			frag_sum += frag;
-		//			((float*)result_buf)[frag_now] /= frag_sum;
-		//
-		//			// if idx is last, do not calculate next.
-		//			if (idx != (ch_sample - 1)) {
-		//				frag = (1.0f - frag);
-		//				((float*)result_buf)[frag_next] += ((float*)ch_buf)[idx] * frag;
-		//				frag_sum = frag;
-		//			}
-		//		}
-		//	}
-		//}
+		re_args.clear();
+
+		uint16 pcm_format = get_args["pcm_format"];
+		uint16 wav_channel = get_args["wav_channel"];
+		uint32 sample_rate = get_args["sample_rate"];
+		uint32 byte_rate = get_args["byte_rate"];
+		uint16 block_align = get_args["block_align"];
+		uint16 bit_per_sample = get_args["bit_per_sample"];
+		uint32 data_byte = get_args["data_byte"];
+		uint32 data_count = data_byte / (bit_per_sample / 8);
+
+		// type to float32
+		float* float_buf = (float*)std::malloc(sizeof(float) * data_count);
+		if ((pcm_format == 1) && (bit_per_sample == 8)) {
+			for (uint32 idx = 0; idx < data_count; idx++) {
+				float_buf[idx] = (float)((int8*)get_buf)[idx];
+			}
+		}
+		else if ((pcm_format == 1) && (bit_per_sample == 16)) {
+			for (uint32 idx = 0; idx < data_count; idx++) {
+				float_buf[idx] = (float)((int16*)get_buf)[idx];
+			}
+		}
+		else if ((pcm_format == 3) && (bit_per_sample == 32)) {
+			for (uint32 idx = 0; idx < data_count; idx++) {
+				float_buf[idx] = ((float*)get_buf)[idx];
+			}
+		}
+		else if ((pcm_format == 6) && (bit_per_sample == 8)) {
+			for (uint32 idx = 0; idx < data_count; idx++) {
+				float_buf[idx] = (float)((uint8*)get_buf)[idx];
+			}
+		}
+		else {
+			throw std::runtime_error("need to update : pcm format");
+		}
+
+		// resampling 
+		uint32 ch_count = data_count / wav_channel;
+		float* ch_buf = (float*)std::malloc(sizeof(float) * ch_count);
+
+		float play_sec = (float)ch_count / (float)sample_rate;
+		float target_rate = re_target;
+		uint32 result_count = play_sec * target_rate;
+		float* temp_buf = (float*)std::malloc(sizeof(float) * result_count);
+
+		uint32 result_byte = result_count * (bit_per_sample / 8) * wav_channel;
+		if ((pcm_format == 1) && (bit_per_sample == 8)) {
+			re_buf = (int8*)std::malloc(result_byte);
+		}
+		else if ((pcm_format == 1) && (bit_per_sample == 16)) {
+			re_buf = (int16*)std::malloc(result_byte);
+		}
+		else if ((pcm_format == 3) && (bit_per_sample == 32)) {
+			re_buf = (float*)std::malloc(result_byte);
+		}
+		else if ((pcm_format == 6) && (bit_per_sample == 8)) {
+			re_buf = (uint8*)std::malloc(result_byte);
+		}
+		else {
+			throw std::runtime_error("need to update : pcm format");
+		}
+
+		for (uint16 ch = 0; ch < wav_channel; ch++) {
+
+			// original to channel
+			for (uint32 idx = 0; idx < ch_count; idx++) {
+				ch_buf[idx] = float_buf[idx * wav_channel + ch];
+			}
+
+			float w2r_ratio = 0.0f;
+			int frag_now = 0;
+			int frag_next = 0;
+			float frag = 0.0f;
+			float frag_sum = 0.0f;
+			
+			if (sample_rate < target_rate) {
+				// channel - up sampling
+				w2r_ratio = (float)result_count / (float)ch_count;
+				for (int idx = 0; idx < result_count; idx++) {
+					frag_now = idx / w2r_ratio;
+					frag_next = (idx + 1) / w2r_ratio;
+					if (frag_now == frag_next) {
+						frag = 1.0f;
+						temp_buf[idx] = ch_buf[frag_now] * frag;
+					}
+					else {
+						frag = (frag_now + 1) * w2r_ratio - idx;
+						temp_buf[idx] = ch_buf[frag_now] * frag;
+
+						// if idx is last, do not calculate next.
+						if (idx != (result_count - 1)) {
+							frag = (1.0f - frag);
+							temp_buf[idx] += ch_buf[frag_next] * frag;
+						}
+					}
+				}
+			}
+			else {
+				// channel - down sampling
+				w2r_ratio = (float)ch_count / (float)result_count;
+				for (int idx = 0; idx < ch_count; idx++) {
+					frag_now = idx / w2r_ratio;
+					frag_next = (idx + 1) / w2r_ratio;
+					if (frag_now == frag_next) {
+						frag = 1.0f;
+						temp_buf[frag_now] += ch_buf[idx] * frag;
+						frag_sum += frag;
+					}
+					else {
+						frag = (frag_now + 1) * w2r_ratio - idx;
+						temp_buf[frag_now] += ch_buf[idx] * frag;
+						frag_sum += frag;
+						temp_buf[frag_now] /= frag_sum;
+
+						// if idx is last, do not calculate next.
+						if (idx != (ch_count - 1)) {
+							frag = (1.0f - frag);
+							temp_buf[frag_next] += ch_buf[idx] * frag;
+							frag_sum = frag;
+						}
+					}
+				}
+			}
+
+			// channel to original
+			if ((pcm_format == 1) && (bit_per_sample == 8)) {
+				for (uint32 idx = 0; idx < result_count; idx++) {
+					((int8*)re_buf)[idx * wav_channel + ch] = (int8)(temp_buf[idx]);
+				}
+			}
+			else if ((pcm_format == 1) && (bit_per_sample == 16)) {
+				for (uint32 idx = 0; idx < result_count; idx++) {
+					((int16*)re_buf)[idx * wav_channel + ch] = (int16)(temp_buf[idx]);
+				}
+			}
+			else if ((pcm_format == 3) && (bit_per_sample == 32)) {
+				for (uint32 idx = 0; idx < result_count; idx++) {
+					((float*)re_buf)[idx * wav_channel + ch] = (float)(temp_buf[idx]);
+				}
+			}
+			else if ((pcm_format == 6) && (bit_per_sample == 8)) {
+				for (uint32 idx = 0; idx < result_count; idx++) {
+					((uint8*)re_buf)[idx * wav_channel + ch] = (uint8)(temp_buf[idx]);
+				}
+			}
+			else {
+				throw std::runtime_error("need to update : pcm format");
+			}
+
+		}
+
+		re_args.add("pcm_format", pcm_format);
+		re_args.add("wav_channel", wav_channel);
+		re_args.add("sample_rate", target_rate);
+		re_args.add("byte_rate", wav_channel * target_rate * (bit_per_sample / 8));
+		re_args.add("block_align", wav_channel * (bit_per_sample / 8));
+		re_args.add("bit_per_sample", bit_per_sample);
+		re_args.add("data_byte", result_byte);
+		re_args.show();
+
+		std::free(float_buf);
+		float_buf = nullptr;
+
+		std::free(ch_buf);
+		ch_buf = nullptr;
+
+		std::free(temp_buf);
+		temp_buf = nullptr;
 
 	}
 	catch (std::exception& e) {
