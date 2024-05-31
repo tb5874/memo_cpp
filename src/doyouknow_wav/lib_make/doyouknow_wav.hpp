@@ -49,15 +49,22 @@ class str_uint64 {
 
 		void show(void) {
 			std::map<std::string, uint64>::iterator itr = _item.begin();
+			printf("\n");
 			for (uint64 idx = 0; idx < _item.size(); idx++) {
 				printf("%s : %d\n", itr->first.c_str(), itr->second);
 				if (idx == _item.size() - 1) {
 					break;
 				}
-				else {
+				else {					
 					itr++;
 				}
 			}
+			printf("\n");
+			return;
+		}
+
+		void clear(void) {
+			_item.clear();
 			return;
 		}
 

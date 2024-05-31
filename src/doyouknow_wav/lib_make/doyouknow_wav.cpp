@@ -108,6 +108,7 @@ void doyouknow_class::wav_open(std::string& get_path) {
 		uint16 bit_per_sample = 0;
 		void* data_buf = nullptr;
 		uint32 data_byte = 0;
+		uint32 data_count = 0;
 
 		// get file byte
         wav_fs.seekg(0, std::ifstream::end);
@@ -263,7 +264,7 @@ void doyouknow_class::wav_open(std::string& get_path) {
 
 				data_byte = subchunk_byte;
 				
-				uint32 data_count = data_byte / (bit_per_sample / 8);
+				data_count = data_byte / (bit_per_sample / 8);
 
 				if (pcm_format == 1) {
 
@@ -360,7 +361,85 @@ void doyouknow_class::wav_open(std::string& get_path) {
 		data_args.add("bit_per_sample", bit_per_sample);
 		data_args.add("data_byte", data_byte);
 		data_args.show();
-		wav_save( get_path + "_save.wav", data_buf, data_args);
+		wav_save(get_path + "_save.wav", data_buf, data_args);
+
+		// Save Test : seperate channel save
+		void* ch_buf = nullptr;
+		uint32 ch_byte = data_byte / wav_channel;
+		uint32 ch_count = data_count / wav_channel;
+		if ((pcm_format == 1) && (bit_per_sample == 8)) {
+			ch_buf = (int8*)std::malloc(ch_byte);
+		}
+		else if ((pcm_format == 1) && (bit_per_sample == 16)) {
+			ch_buf = (int16*)std::malloc(ch_byte);
+		}
+		else if ((pcm_format == 3) && (bit_per_sample == 32)) {
+			ch_buf = (float*)std::malloc(ch_byte);
+		}
+		else if ((pcm_format == 6) && (bit_per_sample == 8)) {
+			ch_buf = (uint8*)std::malloc(ch_byte);
+		}
+		else {
+			throw std::runtime_error("need to update : pcm format");
+		}
+		for (uint16 ch = 0; ch < wav_channel; ch++) {
+
+			if ((pcm_format == 1) && (bit_per_sample == 8)) {
+				for (uint32 idx = 0; idx < ch_count; idx++) {
+					((int8*)ch_buf)[idx] = ((int8*)data_buf)[idx * wav_channel + ch];
+				}
+			}
+			else if ((pcm_format == 1) && (bit_per_sample == 16)) {
+				for (uint32 idx = 0; idx < ch_count; idx++) {
+					((int16*)ch_buf)[idx] = ((int16*)data_buf)[idx * wav_channel + ch];
+				}
+			}
+			else if ((pcm_format == 3) && (bit_per_sample == 32)) {
+				for (uint32 idx = 0; idx < ch_count; idx++) {
+					((float*)ch_buf)[idx] = ((float*)data_buf)[idx * wav_channel + ch];
+				}
+			}
+			else if ((pcm_format == 6) && (bit_per_sample == 8)) {
+				for (uint32 idx = 0; idx < ch_count; idx++) {
+					((uint8*)ch_buf)[idx] = ((uint8*)data_buf)[idx * wav_channel + ch];
+				}
+			}
+			else {
+				throw std::runtime_error("need to update : pcm format");
+			}
+
+			data_args.clear();
+			data_args.add("pcm_format", pcm_format);
+			data_args.add("wav_channel", 1);
+			data_args.add("sample_rate", sample_rate);
+			data_args.add("byte_rate", 1 * sample_rate *(bit_per_sample/8) );
+			data_args.add("block_align", 1 * (bit_per_sample / 8));
+			data_args.add("bit_per_sample", bit_per_sample);
+			data_args.add("data_byte", ch_byte);
+			data_args.show();
+			wav_save(get_path + "_ch" + std::to_string(ch)+".wav", ch_buf, data_args);
+
+				//StreamOut fout_ch(path + "_save_ch" + std::to_string(ch) + ".wav");
+				//fout_ch.write_ascii("RIFF");
+				//fout_ch.write_le_uint32((unsigned int)4 + (unsigned int)24 + (unsigned int)8 + ch_byte);
+				//fout_ch.write_ascii("WAVE");
+				//fout_ch.write_ascii("fmt ");
+				//fout_ch.write_le_uint32(16); // "fmt " chunk size
+				//fout_ch.write_le_uint16(pcm_format); // use original pcm_format
+				//fout_ch.write_le_uint16((unsigned short)1); // set channel 1
+				//fout_ch.write_le_uint32(sample_rate); // use original sample_rate
+				//fout_ch.write_le_uint32((unsigned int)(1 * sample_rate * bit_per_sample / 8)); // 1 channel byte rate
+				//fout_ch.write_le_uint16((unsigned short)(1 * bit_per_sample / 8)); // 1 channel block align
+				//fout_ch.write_le_uint16(bit_per_sample); // use original bit_per_sample
+				//fout_ch.write_ascii("data");
+				//fout_ch.write_le_uint32(ch_byte);
+				//fout_ch.save_data(ch_buf, ch_byte);
+
+		}
+		std::free(ch_buf);
+		ch_buf = nullptr;
+
+		// Save Test : resampling save
 
 	}
 	catch (std::exception& e) {
