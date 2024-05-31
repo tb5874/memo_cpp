@@ -1,5 +1,5 @@
 ﻿cmake_minimum_required(VERSION 3.9)
-
+message(STATUS "CMAKE_VERSION : [${CMAKE_VERSION}]")
 ################################################################################
 
 # visual studio 2019

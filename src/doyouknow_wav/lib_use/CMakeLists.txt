@@ -374,7 +374,7 @@ else()
     set(depend_project_list "libstandard_wav")
     add_dependencies(${PROJECT_NAME} ${depend_project_list})
 endif()
-
+message(STATUS "${PROJECT_NAME} : depend_project_list set to [${depend_project_list}]")
 
 ################################################################################
 # Post build - copy
@@ -382,11 +382,13 @@ endif()
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Debug/###.hpp")    
     if(LIB_BUILD)
+        file(REMOVE "${CMAKE_SOURCE_DIR}/out/Debug/${PROJECT_NAME}.hpp")
         file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Debug")
     endif()
 else()
     # add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/###.hpp" "${CMAKE_SOURCE_DIR}/out/Release/###.hpp")
     if(LIB_BUILD)
+        file(REMOVE "${CMAKE_SOURCE_DIR}/out/Release/${PROJECT_NAME}.hpp")
         file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_NAME}.hpp" DESTINATION "${CMAKE_SOURCE_DIR}/out/Release")
     endif()
 endif()
