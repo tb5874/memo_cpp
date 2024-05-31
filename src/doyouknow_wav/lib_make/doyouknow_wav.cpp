@@ -19,13 +19,14 @@ void doyouknow_class::func_01(void) {
 			// https://www.mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Samples.html
 			// pcm format 6, channel 2, unsigned char, a-law
 
-		// wav open
+		// save test : wav open and save
 		void* wav_buf = nullptr;
 		str_uint64 wav_args;
 		wav_open(file_path, wav_buf, wav_args);
 		wav_save(file_path + "_original.wav", wav_buf, wav_args);
 		std::free(wav_buf);
 		wav_buf = nullptr;
+
 
 		// save test : seperate channel save
 		uint16 ch_target = 0;
