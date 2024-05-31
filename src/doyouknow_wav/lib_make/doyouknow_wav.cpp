@@ -42,7 +42,7 @@ void doyouknow_class::func_01(void) {
 
 
 		// save test : resampling save
-		float re_target = 32000.0f;
+		float re_target = 4000.0f;
 		void* re_buf = nullptr;
 		str_uint64 re_args;
 		wav_open(file_path, wav_buf, wav_args);
@@ -605,7 +605,7 @@ void doyouknow_class::wav_re(void*& get_buf, str_uint64& get_args, float re_targ
 		float play_sec = (float)ch_count / (float)sample_rate;
 		float target_rate = re_target;
 		uint32 result_count = play_sec * target_rate;
-		float* temp_buf = (float*)std::malloc(sizeof(float) * result_count);
+		float* temp_buf = (float*)std::malloc(sizeof(float) * result_count);		
 
 		uint32 result_byte = result_count * (bit_per_sample / 8) * wav_channel;
 		if ((pcm_format == 1) && (bit_per_sample == 8)) {
@@ -624,12 +624,14 @@ void doyouknow_class::wav_re(void*& get_buf, str_uint64& get_args, float re_targ
 			throw std::runtime_error("need to update : pcm format");
 		}
 
-		for (uint16 ch = 0; ch < wav_channel; ch++) {
+		for (uint16 ch = 0; ch < wav_channel; ch++) {			
 
 			// original to channel
 			for (uint32 idx = 0; idx < ch_count; idx++) {
 				ch_buf[idx] = float_buf[idx * wav_channel + ch];
 			}
+
+			std::memset(temp_buf, 0, sizeof(float) * result_count);
 
 			float w2r_ratio = 0.0f;
 			int frag_now = 0;
