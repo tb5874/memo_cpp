@@ -82,8 +82,12 @@ class doyouknow_class{
 		void func_timer(float get_sec);
 		
 	public:
-		void wav_open(std::string& get_path);
-		void wav_save(std::string& file_name, void* get_buf, str_uint64& get_args);
+		void wav_open(std::string& get_path, void*& wav_buf, str_uint64& wav_args);
+		void wav_save(std::string& file_name, void*& get_buf, str_uint64& get_args);
+		void wav_ch(void*& get_buf, str_uint64& get_args, uint16 ch_target, void*& ch_buf, str_uint64& ch_args);
+		void wav_re(void*& get_buf, str_uint64& get_args, float re_target, void*& re_buf, str_uint64& re_args);
+		
+		
 
 	public:
 		uint64 read_pos(std::ifstream& get_fs);
@@ -108,6 +112,6 @@ class doyouknow_class{
 		void write_int16(std::ofstream& get_fs, int16 get_data);
 		void write_int32(std::ofstream& get_fs, int32 get_data);
 		void write_float32(std::ofstream& get_fs, float get_data);
-		void write_data(std::ofstream& get_fs, void* get_buf, uint32 get_data_byte);
+		void write_data(std::ofstream& get_fs, void*& get_buf, uint32 get_data_byte);
 
 };

@@ -19,11 +19,34 @@ void doyouknow_class::func_01(void) {
 			// pcm format 6, channel 2, unsigned char, a-law
         std::string file_path = "C:\\Users\\k\\Desktop\\temp_wav\\M1F1-Alaw-AFsp.wav";
 
-		wav_open(file_path);
+		// wav open
+		void* wav_buf = nullptr;
+		str_uint64 wav_args;
+		wav_open(file_path, wav_buf, wav_args);
+		wav_save(file_path + "_original.wav", wav_buf, wav_args);
 
+
+		// save test : seperate channel save
+		uint16 ch_target = 0;
+		void* ch_buf = nullptr;
+		str_uint64 ch_args;
+		wav_ch(wav_buf, wav_args, ch_target, ch_buf, ch_args);
+		wav_save(file_path + "_ch" + std::to_string(ch_target) + ".wav", ch_buf, ch_args);
+
+
+		// save test : resampling save
+		float re_target = 16000.0f;
+		void* re_buf = nullptr;
+		str_uint64 re_args;
+		wav_re(wav_buf, wav_args, re_target, re_buf, re_args);
+		wav_save(file_path + "_resampling" + std::to_string(re_target) + ".wav", re_buf, re_args);
+
+
+		// just sleep ... 
         func_timer(1.0);
 
-        return;
+
+		return;
 
     }
     catch (std::exception& e) {
@@ -89,14 +112,18 @@ void doyouknow_class::func_timer(float get_sec) {
 
 }
 
-void doyouknow_class::wav_open(std::string& get_path) {
+void doyouknow_class::wav_open(std::string& get_path, void*& wav_buf, str_uint64& wav_args) {
     try {
+
+		if (wav_buf != nullptr) {
+			std::free(wav_buf);
+		}
 
         bool printf_flag = true;
 
         // file open        
         std::ifstream wav_fs(get_path, std::ios_base::binary);
-
+		
 		uint64 wav_byte = 0;
 		std::string get_str = "";
 		uint32 chunk_byte = 0;
@@ -106,7 +133,6 @@ void doyouknow_class::wav_open(std::string& get_path) {
 		uint32 byte_rate = 0;
 		uint16 block_align = 0;
 		uint16 bit_per_sample = 0;
-		void* data_buf = nullptr;
 		uint32 data_byte = 0;
 		uint32 data_count = 0;
 
@@ -270,16 +296,16 @@ void doyouknow_class::wav_open(std::string& get_path) {
 
 					// int8 | uint8
 					if (bit_per_sample == 8) {
-						data_buf = (int8*)std::malloc(data_byte);
+						wav_buf = (int8*)std::malloc(data_byte);
 						for (uint32 idx = 0; idx < data_count; idx++) {
-							((int8*)data_buf)[idx] = read_int8(wav_fs);
+							((int8*)wav_buf)[idx] = read_int8(wav_fs);
 						}
 					}
 					// int16 | uint16
 					else if (bit_per_sample == 16) {
-						data_buf = (int16*)std::malloc(data_byte);
+						wav_buf = (int16*)std::malloc(data_byte);
 						for (uint32 idx = 0; idx < data_count; idx++) {
-							((int16*)data_buf)[idx] = read_int16(wav_fs);
+							((int16*)wav_buf)[idx] = read_int16(wav_fs);
 						}
 					}
 					else {
@@ -293,11 +319,11 @@ void doyouknow_class::wav_open(std::string& get_path) {
 				}
 				else if (pcm_format == 3) {
 
-					// [ float32 ] + [ -1.0 ~ 1.0 ]
+					// [ float32, -1.0 ~ 1.0 ]
 					if (bit_per_sample == 32) {
-						data_buf = (float*)std::malloc(data_byte);
+						wav_buf = (float*)std::malloc(data_byte);
 						for (uint32 idx = 0; idx < data_count; idx++) {
-							((float*)data_buf)[idx] = read_float32(wav_fs);
+							((float*)wav_buf)[idx] = read_float32(wav_fs);
 						}
 					}
 					else {
@@ -309,9 +335,9 @@ void doyouknow_class::wav_open(std::string& get_path) {
 
 					// [ a-law (uint8) ]
 					if (bit_per_sample == 8) {
-						data_buf = (uint8*)std::malloc(data_byte);
+						wav_buf = (uint8*)std::malloc(data_byte);
 						for (uint32 idx = 0; idx < data_count; idx++) {
-							((uint8*)data_buf)[idx] = read_uint8(wav_fs);
+							((uint8*)wav_buf)[idx] = read_uint8(wav_fs);
 						}
 					}
 					else {
@@ -351,95 +377,15 @@ void doyouknow_class::wav_open(std::string& get_path) {
 
 		}
 
-		// Save Test : original save
-		str_uint64 data_args;
-		data_args.add("pcm_format", pcm_format);
-		data_args.add("wav_channel", wav_channel);
-		data_args.add("sample_rate", sample_rate);
-		data_args.add("byte_rate", byte_rate);
-		data_args.add("block_align", block_align);
-		data_args.add("bit_per_sample", bit_per_sample);
-		data_args.add("data_byte", data_byte);
-		data_args.show();
-		wav_save(get_path + "_save.wav", data_buf, data_args);
-
-		// Save Test : seperate channel save
-		void* ch_buf = nullptr;
-		uint32 ch_byte = data_byte / wav_channel;
-		uint32 ch_count = data_count / wav_channel;
-		if ((pcm_format == 1) && (bit_per_sample == 8)) {
-			ch_buf = (int8*)std::malloc(ch_byte);
-		}
-		else if ((pcm_format == 1) && (bit_per_sample == 16)) {
-			ch_buf = (int16*)std::malloc(ch_byte);
-		}
-		else if ((pcm_format == 3) && (bit_per_sample == 32)) {
-			ch_buf = (float*)std::malloc(ch_byte);
-		}
-		else if ((pcm_format == 6) && (bit_per_sample == 8)) {
-			ch_buf = (uint8*)std::malloc(ch_byte);
-		}
-		else {
-			throw std::runtime_error("need to update : pcm format");
-		}
-		for (uint16 ch = 0; ch < wav_channel; ch++) {
-
-			if ((pcm_format == 1) && (bit_per_sample == 8)) {
-				for (uint32 idx = 0; idx < ch_count; idx++) {
-					((int8*)ch_buf)[idx] = ((int8*)data_buf)[idx * wav_channel + ch];
-				}
-			}
-			else if ((pcm_format == 1) && (bit_per_sample == 16)) {
-				for (uint32 idx = 0; idx < ch_count; idx++) {
-					((int16*)ch_buf)[idx] = ((int16*)data_buf)[idx * wav_channel + ch];
-				}
-			}
-			else if ((pcm_format == 3) && (bit_per_sample == 32)) {
-				for (uint32 idx = 0; idx < ch_count; idx++) {
-					((float*)ch_buf)[idx] = ((float*)data_buf)[idx * wav_channel + ch];
-				}
-			}
-			else if ((pcm_format == 6) && (bit_per_sample == 8)) {
-				for (uint32 idx = 0; idx < ch_count; idx++) {
-					((uint8*)ch_buf)[idx] = ((uint8*)data_buf)[idx * wav_channel + ch];
-				}
-			}
-			else {
-				throw std::runtime_error("need to update : pcm format");
-			}
-
-			data_args.clear();
-			data_args.add("pcm_format", pcm_format);
-			data_args.add("wav_channel", 1);
-			data_args.add("sample_rate", sample_rate);
-			data_args.add("byte_rate", 1 * sample_rate *(bit_per_sample/8) );
-			data_args.add("block_align", 1 * (bit_per_sample / 8));
-			data_args.add("bit_per_sample", bit_per_sample);
-			data_args.add("data_byte", ch_byte);
-			data_args.show();
-			wav_save(get_path + "_ch" + std::to_string(ch)+".wav", ch_buf, data_args);
-
-				//StreamOut fout_ch(path + "_save_ch" + std::to_string(ch) + ".wav");
-				//fout_ch.write_ascii("RIFF");
-				//fout_ch.write_le_uint32((unsigned int)4 + (unsigned int)24 + (unsigned int)8 + ch_byte);
-				//fout_ch.write_ascii("WAVE");
-				//fout_ch.write_ascii("fmt ");
-				//fout_ch.write_le_uint32(16); // "fmt " chunk size
-				//fout_ch.write_le_uint16(pcm_format); // use original pcm_format
-				//fout_ch.write_le_uint16((unsigned short)1); // set channel 1
-				//fout_ch.write_le_uint32(sample_rate); // use original sample_rate
-				//fout_ch.write_le_uint32((unsigned int)(1 * sample_rate * bit_per_sample / 8)); // 1 channel byte rate
-				//fout_ch.write_le_uint16((unsigned short)(1 * bit_per_sample / 8)); // 1 channel block align
-				//fout_ch.write_le_uint16(bit_per_sample); // use original bit_per_sample
-				//fout_ch.write_ascii("data");
-				//fout_ch.write_le_uint32(ch_byte);
-				//fout_ch.save_data(ch_buf, ch_byte);
-
-		}
-		std::free(ch_buf);
-		ch_buf = nullptr;
-
-		// Save Test : resampling save
+		wav_args.clear();
+		wav_args.add("pcm_format", pcm_format);
+		wav_args.add("wav_channel", wav_channel);
+		wav_args.add("sample_rate", sample_rate);
+		wav_args.add("byte_rate", byte_rate);
+		wav_args.add("block_align", block_align);
+		wav_args.add("bit_per_sample", bit_per_sample);
+		wav_args.add("data_byte", data_byte);
+		wav_args.show();
 
 	}
 	catch (std::exception& e) {
@@ -453,7 +399,7 @@ void doyouknow_class::wav_open(std::string& get_path) {
 
 }
 
-void doyouknow_class::wav_save(std::string& file_name, void* get_buf, str_uint64& get_args) {
+void doyouknow_class::wav_save(std::string& file_name, void*& get_buf, str_uint64& get_args) {
 	try {
 
 		uint16 pcm_format = get_args["pcm_format"];
@@ -467,7 +413,8 @@ void doyouknow_class::wav_save(std::string& file_name, void* get_buf, str_uint64
 		std::ofstream wav_fs(file_name, std::ios_base::binary);
 		
 		// (Byte 004) : "RIFF" : char x 4
-		// (Byte 008) : "RIFF" chunk size ( "WAVE"(4) + "fmt "(24) + "data"(8) + data size ) : unsgined int
+		// (Byte 008) : "RIFF" chunk byte (after this 4 byte read) : unsgined int
+			// "WAVE"(4) + "fmt "(24) + "data"(8) + data_byte )
 		write_char(wav_fs, "RIFF");
 		write_uint32(wav_fs, (uint32)4 + (uint32)24 + (uint32)8 + data_byte);
 
@@ -475,7 +422,7 @@ void doyouknow_class::wav_save(std::string& file_name, void* get_buf, str_uint64
 		write_char(wav_fs, "WAVE");
 
 		// (Byte 016) : "fmt " : char x 4
-		// (Byte 020) : "fmt " chunk byte (after this byte read) : unsgined int
+		// (Byte 020) : "fmt " chunk byte (after this 4 byte read) : unsgined int
 		// (Byte 022) : "fmt " pcm format : unsgined short
 		// (Byte 024) : "fmt " wav channel : unsgined short
 		// (Byte 028) : "fmt " sample rate : unsgined int
@@ -492,12 +439,14 @@ void doyouknow_class::wav_save(std::string& file_name, void* get_buf, str_uint64
 		write_uint16(wav_fs, bit_per_sample);
 
 		// (Byte 040) : "data" : char x 4
-		// (Byte 044) : "data" chunk byte (after this byte read) : unsgined int
+		// (Byte 044) : "data" chunk byte (after this 4 byte read) : unsgined int
 		// (Byte 045~): "data"
 		write_char(wav_fs, "data");
 		write_uint32(wav_fs, data_byte);
 		write_data(wav_fs, get_buf, data_byte);
 
+		wav_fs.close();
+
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -510,370 +459,166 @@ void doyouknow_class::wav_save(std::string& file_name, void* get_buf, str_uint64
 
 }
 
-			//
-			//
-			//	// Test 01
-			//	// [ save test : original ]
-			//	if (true) {
-			//
-			//		StreamOut fout(path + "_save_original.wav");
-			//
-			//		// (Byte 004) : "RIFF" : char x 4
-			//		// (Byte 008) : "RIFF" chunk size ( "WAVE"(4) + "fmt "(24) + "data"(8 + data size) ) : unsgined int
-			//		fout.write_ascii("RIFF");
-			//		fout.write_le_uint32((unsigned int)4 + (unsigned int)24 + (unsigned int)8 + subchunk_byte);
-			//
-			//		// (Byte 012) : "WAVE" : char x 4
-			//		fout.write_ascii("WAVE");
-			//
-			//		// (Byte 016) : "fmt " : char x 4
-			//		// (Byte 020) : "fmt " chunk byte (after this byte read) : unsgined int
-			//		// (Byte 022) : "fmt " pcm format : unsgined short
-			//		// (Byte 024) : "fmt " wav channel : unsgined short
-			//		// (Byte 028) : "fmt " sample rate : unsgined int
-			//		// (Byte 032) : "fmt " byte rate : unsgined int
-			//		// (Byte 034) : "fmt " block align : unsgined short
-			//		// (Byte 036) : "fmt " bit per sample : unsgined short
-			//		fout.write_ascii("fmt ");
-			//		fout.write_le_uint32((unsigned int)16);
-			//		fout.write_le_uint16(pcm_format);
-			//		fout.write_le_uint16(wav_channel);
-			//		fout.write_le_uint32(sample_rate);
-			//		fout.write_le_uint32(byte_rate);
-			//		fout.write_le_uint16(block_align);
-			//		fout.write_le_uint16(bit_per_sample);
-			//
-			//		// (Byte 040) : "data" : char x 4
-			//		// (Byte 044) : "data" chunk byte (after this byte read) : unsgined int
-			//		// (Byte 045~): "data"
-			//		fout.write_ascii("data");
-			//		fout.write_le_uint32(subchunk_byte); // In this if case, subchunk_byte is "data byte"
-			//		fout.save_data(data_buf, subchunk_byte);
-			//
-			//	}
-			//
-			//
-			//	// Test 02
-			//	// [ save test : separate channel ]
-			//	if (true) {
-			//
-			//		unsigned int ch_byte = subchunk_byte / wav_channel;
-			//		unsigned int ch_sample = data_count / wav_channel;
-			//
-			//		// get buf
-			//		void* ch_buf = nullptr;
-			//		if ((pcm_format == 1) && (bit_per_sample == 8)) {
-			//			ch_buf = (char*)std::malloc(ch_byte);
-			//		}
-			//		else if ((pcm_format == 1) && (bit_per_sample == 16)) {
-			//			ch_buf = (short*)std::malloc(ch_byte);
-			//		}
-			//		else if ((pcm_format == 3) && (bit_per_sample == 32)) {
-			//			ch_buf = (float*)std::malloc(ch_byte);
-			//		}
-			//		else if ((pcm_format == 6) && (bit_per_sample == 8)) {
-			//			ch_buf = (unsigned char*)std::malloc(ch_byte);
-			//		}
-			//		else {
-			//			ERROR1(DTIERR_UNKNOWN_ERROR, "need to update pcm format");
-			//		}
-			//
-			//		// get data
-			//		for (int ch = 0; ch < wav_channel; ch++) {
-			//
-			//			if ((pcm_format == 1) && (bit_per_sample == 8)) {
-			//				for (int idx = 0; idx < ch_sample; idx++) {
-			//					((char*)ch_buf)[idx] = ((char*)data_buf)[idx * wav_channel + ch];
-			//				}
-			//			}
-			//			else if ((pcm_format == 1) && (bit_per_sample == 16)) {
-			//				for (int idx = 0; idx < ch_sample; idx++) {
-			//					((short*)ch_buf)[idx] = ((short*)data_buf)[idx * wav_channel + ch];
-			//				}
-			//			}
-			//			else if ((pcm_format == 3) && (bit_per_sample == 32)) {
-			//				for (int idx = 0; idx < ch_sample; idx++) {
-			//					((float*)ch_buf)[idx] = ((float*)data_buf)[idx * wav_channel + ch];
-			//				}
-			//			}
-			//			else if ((pcm_format == 6) && (bit_per_sample == 8)) {
-			//				for (int idx = 0; idx < ch_sample; idx++) {
-			//					((unsigned char*)ch_buf)[idx] = ((unsigned char*)data_buf)[idx * wav_channel + ch];
-			//				}
-			//			}
-			//			else {
-			//				ERROR1(DTIERR_UNKNOWN_ERROR, "need to update pcm format");
-			//			}
-			//
-			//			StreamOut fout_ch(path + "_save_ch" + std::to_string(ch) + ".wav");
-			//			fout_ch.write_ascii("RIFF");
-			//			fout_ch.write_le_uint32((unsigned int)4 + (unsigned int)24 + (unsigned int)8 + ch_byte);
-			//			fout_ch.write_ascii("WAVE");
-			//			fout_ch.write_ascii("fmt ");
-			//			fout_ch.write_le_uint32(16); // "fmt " chunk size
-			//			fout_ch.write_le_uint16(pcm_format); // use original pcm_format
-			//			fout_ch.write_le_uint16((unsigned short)1); // set channel 1
-			//			fout_ch.write_le_uint32(sample_rate); // use original sample_rate
-			//			fout_ch.write_le_uint32((unsigned int)(1 * sample_rate * bit_per_sample / 8)); // 1 channel byte rate
-			//			fout_ch.write_le_uint16((unsigned short)(1 * bit_per_sample / 8)); // 1 channel block align
-			//			fout_ch.write_le_uint16(bit_per_sample); // use original bit_per_sample
-			//			fout_ch.write_ascii("data");
-			//			fout_ch.write_le_uint32(ch_byte);
-			//			fout_ch.save_data(ch_buf, ch_byte);
-			//
-			//		}
-			//
-			//		std::free(ch_buf);
-			//		ch_buf = nullptr;
-			//
-			//	}
-			//
-			//
-			//	// Test 03
-			//	// [ save test : 1 channel -> pcm_format 3 + sample rate 16000 ]
-			//	if (true) {
-			//
-			//		unsigned int ch_sample = data_count / wav_channel;
-			//		float play_sec = (float)ch_sample / (float)sample_rate;
-			//
-			//		unsigned short target_pcm = 3;
-			//		float target_rate = 16000.0f;
-			//		int target_ch = 0;
-			//
-			//		unsigned int result_sample = play_sec * target_rate;
-			//		unsigned int result_byte = sizeof(float) * result_sample;
-			//		void* result_buf = (float*)std::malloc(result_byte);
-			//		std::memset(result_buf, 0, result_byte);
-			//
-			//		// get buf
-			//		void* ch_buf = (float*)std::malloc(sizeof(float) * ch_sample);
-			//
-			//		// get target channel data
-			//		if ((pcm_format == 1) && (bit_per_sample == 8)) {
-			//			for (int idx = 0; idx < ch_sample; idx++) {
-			//				((float*)ch_buf)[idx] = ((char*)data_buf)[idx * wav_channel + target_ch];
-			//			}
-			//		}
-			//		else if ((pcm_format == 1) && (bit_per_sample == 16)) {
-			//			for (int idx = 0; idx < ch_sample; idx++) {
-			//				((float*)ch_buf)[idx] = ((short*)data_buf)[idx * wav_channel + target_ch];
-			//			}
-			//		}
-			//		else if ((pcm_format == 3) && (bit_per_sample == 32)) {
-			//			for (int idx = 0; idx < ch_sample; idx++) {
-			//				((float*)ch_buf)[idx] = ((float*)data_buf)[idx * wav_channel + target_ch];
-			//			}
-			//		}
-			//		else if ((pcm_format == 6) && (bit_per_sample == 8)) {
-			//			for (int idx = 0; idx < ch_sample; idx++) {
-			//
-			//				unsigned char alaw_data = ((unsigned char*)data_buf)[idx * wav_channel + target_ch];
-			//
-			//				short alaw_bias = 0x84;
-			//				// 0x84 for a-law bias
-			//				alaw_data ^= 0x55;
-			//				// 0x55 for a-law decode rule
-			//			// data: aaaa bbbb
-			//			// xor : 0101 0101 (0x55)
-			//			// val1: cccc dddd
-			//				bool sign_flag = (alaw_data & 0x80);
-			//				// 0x80 for get sign bit ( 1000 0000 )
-			//			// val1: cccc dddd
-			//			// and : 1000 0000
-			//			// sign: @XXX XXXX
-			//				short decode_short = ((alaw_data & 0xF) << 4) + 0x84;
-			//				// 0xF for lower 4 bit
-			//				// 0x84 for a-law bias ( 1000 0100 )
-			//			// val1: cccc dddd
-			//			// and : 0000 1111 (0xF)
-			//			// val2: 0000 eeee << 4
-			//			// val2: eeee 0000 + 1000 0100 (0x84)
-			//			// val2: feee 0100
-			//				decode_short <<= (alaw_data & 0x70) >> 4;
-			//				// 0x70 for get upper 3 bit
-			//			// val1: cccc dddd
-			//			// and : 0111 0000 (0x70)
-			//			// val3: 0ggg 0000 >> 4
-			//			// val3: 0000 0ggg ( So, val3 is 0 ~ 7 )
-			//			// val2: val2 << val3
-			//				// t : every case : -->
-			//				// (0) : 0000 0000 feee 0100
-			//				// (1) : 0000 000f eee0 1000
-			//				// (2) : 0000 00fe ee01 0000
-			//				// (3) : 0000 0fee e010 0000
-			//				// (4) : 0000 feee 0100 0000
-			//				// (5) : 000f eee0 1000 0000
-			//				// (6) : 00fe ee01 0000 0000
-			//				// (7) : 0fee e010 0000 0000
-			//				// t : every case : <--
-			//
-			//				((float*)ch_buf)[idx] = sign_flag ? (alaw_bias - decode_short) : (decode_short - alaw_bias);
-			//				// sign_flag == ture : 0000 0000 1000 0100 - t
-			//				// sign_flag == false: t - 0000 0000 1000 0100
-			//
-			//			}
-			//		}
-			//		else {
-			//			ERROR1(DTIERR_UNKNOWN_ERROR, "need to update pcm format");
-			//		}
-			//
-			//		if (printf_flag) {
-			//			printf("\n\n");
-			//			printf("ch_buf\n");
-			//			for (int idx = 0; idx < ch_sample; idx++) {
-			//				if (idx % 16 == 0) {
-			//					printf("\n");
-			//				}
-			//				printf("%12.4f ", ((float*)ch_buf)[idx]);
-			//			}
-			//		}
-			//
-			//
-			//		// resampling
-			//		int frag_now = 0;
-			//		int frag_next = 0;
-			//		float frag = 0.0f;
-			//		float frag_sum = 0.0f;
-			//
-			//		float c2r_ratio = 0.0f;
-			//
-			//		// up_sampling
-			//		if (sample_rate < target_rate) {
-			//
-			//			c2r_ratio = (float)result_sample / (float)ch_sample;
-			//
-			//			for (int idx = 0; idx < result_sample; idx++) {
-			//
-			//				frag_now = idx / c2r_ratio;
-			//				frag_next = (idx + 1) / c2r_ratio;
-			//
-			//				if (frag_now == frag_next) {
-			//					((float*)result_buf)[idx] = ((float*)ch_buf)[frag_now];
-			//				}
-			//				else {
-			//					frag = (frag_now + 1) * c2r_ratio - idx;
-			//					((float*)result_buf)[idx] = ((float*)ch_buf)[frag_now] * frag;
-			//					// if idx is last, do not calculate next.
-			//					if (idx != (result_sample - 1)) {
-			//						frag = (1.0f - frag);
-			//						((float*)result_buf)[idx] += ((float*)ch_buf)[frag_next] * frag;
-			//					}
-			//				}
-			//
-			//			}
-			//
-			//		}
-			//		// down_sampling
-			//		else {
-			//
-			//			c2r_ratio = (float)ch_sample / (float)result_sample;
-			//
-			//			for (int idx = 0; idx < ch_sample; idx++) {
-			//
-			//				frag_now = idx / c2r_ratio;
-			//				frag_next = (idx + 1) / c2r_ratio;
-			//
-			//				if (frag_now == frag_next) {
-			//					frag = 1.0f;
-			//					((float*)result_buf)[frag_now] += ((float*)ch_buf)[idx] * frag;
-			//					frag_sum += 1.0f;
-			//				}
-			//				else {
-			//					frag = (frag_now + 1) * c2r_ratio - idx;
-			//					((float*)result_buf)[frag_now] += ((float*)ch_buf)[idx] * frag;
-			//					frag_sum += frag;
-			//					((float*)result_buf)[frag_now] /= frag_sum;
-			//					// if idx is last, do not calculate next.
-			//					if (idx != (ch_sample - 1)) {
-			//						frag = (1.0f - frag);
-			//						((float*)result_buf)[frag_next] += ((float*)ch_buf)[idx] * frag;
-			//						frag_sum = frag;
-			//					}
-			//				}
-			//
-			//			}
-			//		}
-			//
-			//		if (printf_flag) {
-			//			printf("\n\n");
-			//			printf("result_buf\n");
-			//			for (int idx = 0; idx < result_sample; idx++) {
-			//				if (idx % 16 == 0) {
-			//					printf("\n");
-			//				}
-			//				printf("%12.4f ", ((float*)result_buf)[idx]);
-			//			}
-			//		}
-			//
-			//		// pcm format 3
-			//		if ((pcm_format == 1) && (bit_per_sample == 8)) {
-			//			for (int idx = 0; idx < result_sample; idx++) {
-			//				((float*)result_buf)[idx] /= 128.0f;
-			//			}
-			//		}
-			//		else if ((pcm_format == 1) && (bit_per_sample == 16)) {
-			//			for (int idx = 0; idx < result_sample; idx++) {
-			//				((float*)result_buf)[idx] /= 32768.0f;
-			//			}
-			//		}
-			//		else if ((pcm_format == 3) && (bit_per_sample == 32)) {
-			//			// do nothing
-			//		}
-			//		else if ((pcm_format == 6) && (bit_per_sample == 8)) {
-			//			for (int idx = 0; idx < result_sample; idx++) {
-			//				// already a-law decode (short)
-			//				((float*)result_buf)[idx] /= 32768.0f;
-			//			}
-			//		}
-			//		else {
-			//			ERROR1(DTIERR_UNKNOWN_ERROR, "need to update pcm format");
-			//		}
-			//
-			//		if (printf_flag) {
-			//			printf("\n\n");
-			//			printf("normalize result_buf\n");
-			//			for (int idx = 0; idx < result_sample; idx++) {
-			//				if (idx % 16 == 0) {
-			//					printf("\n");
-			//				}
-			//				printf("%12.6f ", ((float*)result_buf)[idx]);
-			//			}
-			//		}
-			//
-			//		StreamOut fout_sampling(path + "_save_resampling_" + std::to_string((int)target_rate) + ".wav");
-			//		fout_sampling.write_ascii("RIFF");
-			//		fout_sampling.write_le_uint32((unsigned int)4 + (unsigned int)24 + (unsigned int)8 + result_byte);
-			//		fout_sampling.write_ascii("WAVE");
-			//		fout_sampling.write_ascii("fmt ");
-			//		fout_sampling.write_le_uint32((unsigned int)16); // "fmt " chunk size
-			//		fout_sampling.write_le_uint16((unsigned short)3); // pcm_format
-			//		fout_sampling.write_le_uint16((unsigned short)1); // set channel 1
-			//		fout_sampling.write_le_uint32((unsigned int)target_rate); // target_rate
-			//		fout_sampling.write_le_uint32((unsigned int)(1 * (unsigned int)target_rate * sizeof(float))); // 1 channel byte rate
-			//		fout_sampling.write_le_uint16((unsigned short)(1 * sizeof(float))); // 1 channel block align
-			//		fout_sampling.write_le_uint16((unsigned short)(sizeof(float) * 8)); // bit_per_sample
-			//		fout_sampling.write_ascii("data");
-			//		fout_sampling.write_le_uint32(result_byte);
-			//		fout_sampling.save_data(result_buf, result_byte);
-			//
-			//		std::free(ch_buf);
-			//		ch_buf = nullptr;
-			//
-			//		std::free(result_buf);
-			//		result_buf = nullptr;
-			//
-			//	}
-			//
-			//	device().memcpy_from_host(void_ptr(), data_buf, subchunk_byte);
-			//	std::free(data_buf);
-			//	data_buf = nullptr;
-			//
+void doyouknow_class::wav_ch(void*& get_buf, str_uint64& get_args, uint16 ch_target, void*& ch_buf, str_uint64& ch_args) {
+	try {
+
+		if (ch_buf != nullptr) {
+			std::free(ch_buf);
+		}
+
+		uint16 pcm_format = get_args["pcm_format"];
+		uint16 wav_channel = get_args["wav_channel"];
+		uint32 sample_rate = get_args["sample_rate"];
+		uint32 byte_rate = get_args["byte_rate"];
+		uint16 block_align = get_args["block_align"];
+		uint16 bit_per_sample = get_args["bit_per_sample"];
+		uint32 data_byte = get_args["data_byte"];
+		uint32 ch_byte = data_byte / wav_channel;
+		uint32 ch_count = data_byte / wav_channel / (bit_per_sample / 8);
+
+		if ((pcm_format == 1) && (bit_per_sample == 8)) {
+			ch_buf = (int8*)std::malloc(ch_byte);
+		}
+		else if ((pcm_format == 1) && (bit_per_sample == 16)) {
+			ch_buf = (int16*)std::malloc(ch_byte);
+		}
+		else if ((pcm_format == 3) && (bit_per_sample == 32)) {
+			ch_buf = (float*)std::malloc(ch_byte);
+		}
+		else if ((pcm_format == 6) && (bit_per_sample == 8)) {
+			ch_buf = (uint8*)std::malloc(ch_byte);
+		}
+		else {
+			throw std::runtime_error("need to update : pcm format");
+		}
+
+		if ((pcm_format == 1) && (bit_per_sample == 8)) {
+			for (uint32 idx = 0; idx < ch_count; idx++) {
+				((int8*)ch_buf)[idx] = ((int8*)get_buf)[idx * wav_channel + ch_target];
+			}
+		}
+		else if ((pcm_format == 1) && (bit_per_sample == 16)) {
+			for (uint32 idx = 0; idx < ch_count; idx++) {
+				((int16*)ch_buf)[idx] = ((int16*)get_buf)[idx * wav_channel + ch_target];
+			}
+		}
+		else if ((pcm_format == 3) && (bit_per_sample == 32)) {
+			for (uint32 idx = 0; idx < ch_count; idx++) {
+				((float*)ch_buf)[idx] = ((float*)get_buf)[idx * wav_channel + ch_target];
+			}
+		}
+		else if ((pcm_format == 6) && (bit_per_sample == 8)) {
+			for (uint32 idx = 0; idx < ch_count; idx++) {
+				((uint8*)ch_buf)[idx] = ((uint8*)get_buf)[idx * wav_channel + ch_target];
+			}
+		}
+		else {
+			throw std::runtime_error("need to update : pcm format");
+		}
+
+		ch_args.clear();
+		ch_args.add("pcm_format", pcm_format);
+		ch_args.add("wav_channel", 1);
+		ch_args.add("sample_rate", sample_rate);
+		ch_args.add("byte_rate", 1 * sample_rate * (bit_per_sample / 8));
+		ch_args.add("block_align", 1 * (bit_per_sample / 8));
+		ch_args.add("bit_per_sample", bit_per_sample);
+		ch_args.add("data_byte", ch_byte);
+		ch_args.show();
+
+	}
+	catch (std::exception& e) {
+		printf("C++ Exception( std::exception ) : %s\n", e.what());
+	}
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
+	}
+
+	return;
+
+}
+
+void doyouknow_class::wav_re(void*& get_buf, str_uint64& get_args, float re_target, void*& re_buf, str_uint64& re_args) {
+	try {
+
+		if (re_buf != nullptr) {
+			std::free(re_buf);
+		}
+
+		//float play_sec = (float)data_count / (float)wav_channel / (float)sample_rate;
+		//float target_rate = 16000.0f;
+		//uint32 result_count = play_sec * target_rate;
+		//uint32 result_byte = result_count * (bit_per_sample / 8) * wav_channel;
+		//
+		//int frag_now = 0;
+		//int frag_next = 0;
+		//float frag = 0.0f;
+		//float frag_sum = 0.0f;
+		//float c2r_ratio = 0.0f;
+		//// up_sampling
+		//if (sample_rate < target_rate) {
+		//	c2r_ratio = (float)result_sample / (float)ch_sample;
+		//	for (int idx = 0; idx < result_sample; idx++) {
+		//		frag_now = idx / c2r_ratio;
+		//		frag_next = (idx + 1) / c2r_ratio;
+		//		if (frag_now == frag_next) {
+		//			frag = 1.0f;
+		//			((float*)result_buf)[idx] = ((float*)ch_buf)[frag_now] * frag;
+		//		}
+		//		else {
+		//			frag = (frag_now + 1) * c2r_ratio - idx;
+		//			((float*)result_buf)[idx] = ((float*)ch_buf)[frag_now] * frag;
+		//
+		//			// if idx is last, do not calculate next.
+		//			if (idx != (result_sample - 1)) {
+		//				frag = (1.0f - frag);
+		//				((float*)result_buf)[idx] += ((float*)ch_buf)[frag_next] * frag;
+		//			}
+		//		}
+		//	}
+		//}
+		//// down_sampling
+		//else {
+		//	c2r_ratio = (float)ch_sample / (float)result_sample;
+		//	for (int idx = 0; idx < ch_sample; idx++) {
+		//		frag_now = idx / c2r_ratio;
+		//		frag_next = (idx + 1) / c2r_ratio;
+		//		if (frag_now == frag_next) {
+		//			frag = 1.0f;
+		//			((float*)result_buf)[frag_now] += ((float*)ch_buf)[idx] * frag;
+		//			frag_sum += frag;
+		//		}
+		//		else {
+		//			frag = (frag_now + 1) * c2r_ratio - idx;
+		//			((float*)result_buf)[frag_now] += ((float*)ch_buf)[idx] * frag;
+		//			frag_sum += frag;
+		//			((float*)result_buf)[frag_now] /= frag_sum;
+		//
+		//			// if idx is last, do not calculate next.
+		//			if (idx != (ch_sample - 1)) {
+		//				frag = (1.0f - frag);
+		//				((float*)result_buf)[frag_next] += ((float*)ch_buf)[idx] * frag;
+		//				frag_sum = frag;
+		//			}
+		//		}
+		//	}
+		//}
+
+	}
+	catch (std::exception& e) {
+		printf("C++ Exception( std::exception ) : %s\n", e.what());
+	}
+	catch (...) {
+		printf("C++ Exception( ... ) : Not std::exception\n");
+	}
+
+	return;
+
+}
 
 void doyouknow_class::set_pos(std::ifstream& get_fs, uint64 get_pos) {
 	try {
-
 		get_fs.seekg(get_pos, std::ifstream::beg);
-
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -881,19 +626,13 @@ void doyouknow_class::set_pos(std::ifstream& get_fs, uint64 get_pos) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return;
-
 }
 
 uint64 doyouknow_class::read_pos(std::ifstream& get_fs) {
-
 	uint64 get_pos = 0;
-
 	try {
-
 		get_pos = (get_fs.tellg() == -1) ? throw std::runtime_error("file stream position is -1") : get_fs.tellg();
-
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -901,24 +640,17 @@ uint64 doyouknow_class::read_pos(std::ifstream& get_fs) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return get_pos;
-
 }
 
 std::string doyouknow_class::read_char_n(std::ifstream& get_fs, uint64 get_n) {
-    
     std::string get_str = "";
-
     try {
-
 		int8 get_char = 0;
-
         for (uint64 idx = 0; idx < get_n; idx++) {
             get_fs.read(&get_char, 1);
             get_str += get_char;
         }
-
     }
     catch (std::exception& e) {
         printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -926,22 +658,15 @@ std::string doyouknow_class::read_char_n(std::ifstream& get_fs, uint64 get_n) {
     catch (...) {
         printf("C++ Exception( ... ) : Not std::exception\n");
     }
-
     return get_str;
-
 }
 
 uint8 doyouknow_class::read_uint8(std::ifstream& get_fs) {
-
 	uint8 get_uint8 = 0;
-
     try{
-
-		int8 bytes = 0;
-        get_fs.read(&bytes, 1);
-
-        get_uint8 = bytes;
-
+		int8 get_byte = 0;
+        get_fs.read(&get_byte, 1);
+        get_uint8 = get_byte;
     }
     catch (std::exception& e) {
         printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -949,23 +674,16 @@ uint8 doyouknow_class::read_uint8(std::ifstream& get_fs) {
     catch (...) {
         printf("C++ Exception( ... ) : Not std::exception\n");
     }
-
     return get_uint8;
-
 }
 
 uint16 doyouknow_class::read_uint16(std::ifstream& get_fs) {
-
 	uint16 get_uint16 = 0;
-
     try {
-
-		int8 bytes[2] = { 0, };
-        get_fs.read(bytes, 2);
-
-        ((int8*)&get_uint16)[0] = bytes[0];
-        ((int8*)&get_uint16)[1] = bytes[1];
-
+		int8 get_byte[2] = { 0, };
+        get_fs.read(get_byte, 2);
+        ((int8*)&get_uint16)[0] = get_byte[0];
+        ((int8*)&get_uint16)[1] = get_byte[1];
     }
     catch (std::exception& e) {
         printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -973,25 +691,18 @@ uint16 doyouknow_class::read_uint16(std::ifstream& get_fs) {
     catch (...) {
         printf("C++ Exception( ... ) : Not std::exception\n");
     }
-
     return get_uint16;
-
 }
 
 uint32 doyouknow_class::read_uint32(std::ifstream& get_fs) {
-
 	uint32 get_uint32 = 0;
-
     try {
-
-		int8 bytes[4] = { 0, };
-        get_fs.read(bytes, 4);
-
-        ((int8*)&get_uint32)[0] = bytes[0];
-        ((int8*)&get_uint32)[1] = bytes[1];
-        ((int8*)&get_uint32)[2] = bytes[2];
-        ((int8*)&get_uint32)[3] = bytes[3];
-
+		int8 get_byte[4] = { 0, };
+        get_fs.read(get_byte, 4);
+        ((int8*)&get_uint32)[0] = get_byte[0];
+        ((int8*)&get_uint32)[1] = get_byte[1];
+        ((int8*)&get_uint32)[2] = get_byte[2];
+        ((int8*)&get_uint32)[3] = get_byte[3];
     }
     catch (std::exception& e) {
         printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -999,22 +710,15 @@ uint32 doyouknow_class::read_uint32(std::ifstream& get_fs) {
     catch (...) {
         printf("C++ Exception( ... ) : Not std::exception\n");
     }
-
     return get_uint32;
-
 }
 
 int8 doyouknow_class::read_int8(std::ifstream& get_fs) {
-
 	int8 get_int8 = 0;
-
 	try {
-
-		int8 bytes = 0;
-		get_fs.read(&bytes, 1);
-
-		get_int8 = bytes;
-
+		int8 get_byte = 0;
+		get_fs.read(&get_byte, 1);
+		get_int8 = get_byte;
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1022,23 +726,16 @@ int8 doyouknow_class::read_int8(std::ifstream& get_fs) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return get_int8;
-
 }
 
 int16 doyouknow_class::read_int16(std::ifstream& get_fs) {
-
 	int16 get_int16 = 0;
-
 	try {
-
-		int8 bytes[2] = { 0, };
-		get_fs.read(bytes, 2);
-
-		((int8*)&get_int16)[0] = bytes[0];
-		((int8*)&get_int16)[1] = bytes[1];
-
+		int8 get_byte[2] = { 0, };
+		get_fs.read(get_byte, 2);
+		((int8*)&get_int16)[0] = get_byte[0];
+		((int8*)&get_int16)[1] = get_byte[1];
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1046,25 +743,18 @@ int16 doyouknow_class::read_int16(std::ifstream& get_fs) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return get_int16;
-
 }
 
 int32 doyouknow_class::read_int32(std::ifstream& get_fs) {
-
 	int32 get_int32 = 0;
-
 	try {
-
-		int8 bytes[4] = { 0, };
-		get_fs.read(bytes, 4);
-
-		((int8*)&get_int32)[0] = bytes[0];
-		((int8*)&get_int32)[1] = bytes[1];
-		((int8*)&get_int32)[2] = bytes[2];
-		((int8*)&get_int32)[3] = bytes[3];
-
+		int8 get_byte[4] = { 0, };
+		get_fs.read(get_byte, 4);
+		((int8*)&get_int32)[0] = get_byte[0];
+		((int8*)&get_int32)[1] = get_byte[1];
+		((int8*)&get_int32)[2] = get_byte[2];
+		((int8*)&get_int32)[3] = get_byte[3];
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1072,25 +762,18 @@ int32 doyouknow_class::read_int32(std::ifstream& get_fs) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return get_int32;
-
 }
 
 float doyouknow_class::read_float32(std::ifstream& get_fs) {
-
 	float get_float32 = 0.0f;
-
 	try {
-
-		int8 bytes[4] = { 0, };
-		get_fs.read(bytes, 4);
-
-		((int8*)&get_float32)[0] = bytes[0];
-		((int8*)&get_float32)[1] = bytes[1];
-		((int8*)&get_float32)[2] = bytes[2];
-		((int8*)&get_float32)[3] = bytes[3];
-
+		int8 get_byte[4] = { 0, };
+		get_fs.read(get_byte, 4);
+		((int8*)&get_float32)[0] = get_byte[0];
+		((int8*)&get_float32)[1] = get_byte[1];
+		((int8*)&get_float32)[2] = get_byte[2];
+		((int8*)&get_float32)[3] = get_byte[3];
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1098,22 +781,17 @@ float doyouknow_class::read_float32(std::ifstream& get_fs) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return get_float32;
-
 }
-
 
 void doyouknow_class::write_char(std::ofstream& get_fs, const char* get_char) {
 	try {
-
 		std::string get_str(get_char);
 		int8 get_char = 0;
 		for (uint64 idx = 0; idx < get_str.size(); idx++){
 			get_char = get_str.at(idx);
 			get_fs.write(&get_char, 1);
 		}
-
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1121,18 +799,14 @@ void doyouknow_class::write_char(std::ofstream& get_fs, const char* get_char) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return;
-
 }
 
 void doyouknow_class::write_uint8(std::ofstream& get_fs, uint8 get_data) {
 	try {
-
 		int8 get_byte = 0;
 		get_byte = get_data;
 		get_fs.write(&get_byte, 1);
-
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1140,19 +814,15 @@ void doyouknow_class::write_uint8(std::ofstream& get_fs, uint8 get_data) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return;
-
 }
 
 void doyouknow_class::write_uint16(std::ofstream& get_fs, uint16 get_data) {
 	try {
-
 		int8 get_byte[2] = { 0, };
 		get_byte[0] = ((int8*)&get_data)[0];
 		get_byte[1] = ((int8*)&get_data)[1];
 		get_fs.write(get_byte, 2);
-
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1160,21 +830,17 @@ void doyouknow_class::write_uint16(std::ofstream& get_fs, uint16 get_data) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return;
-
 }
 
 void doyouknow_class::write_uint32(std::ofstream& get_fs, uint32 get_data) {
 	try {
-
 		int8 get_byte[4] = { 0, };
 		get_byte[0] = ((int8*)&get_data)[0];
 		get_byte[1] = ((int8*)&get_data)[1];
 		get_byte[2] = ((int8*)&get_data)[2];
 		get_byte[3] = ((int8*)&get_data)[3];
 		get_fs.write(get_byte, 4);
-
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1182,18 +848,14 @@ void doyouknow_class::write_uint32(std::ofstream& get_fs, uint32 get_data) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return;
-
 }
 
 void doyouknow_class::write_int8(std::ofstream& get_fs, int8 get_data) {
 	try {
-
 		int8 get_byte = 0;
 		get_byte = get_data;
 		get_fs.write(&get_byte, 1);
-
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1201,19 +863,15 @@ void doyouknow_class::write_int8(std::ofstream& get_fs, int8 get_data) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return;
-
 }
 
 void doyouknow_class::write_int16(std::ofstream& get_fs, int16 get_data) {
 	try {
-
 		int8 get_byte[2] = { 0, };
 		get_byte[0] = ((int8*)&get_data)[0];
 		get_byte[1] = ((int8*)&get_data)[1];
 		get_fs.write(get_byte, 2);
-
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1221,21 +879,17 @@ void doyouknow_class::write_int16(std::ofstream& get_fs, int16 get_data) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return;
-
 }
 
 void doyouknow_class::write_int32(std::ofstream& get_fs, int32 get_data) {
 	try {
-
 		int8 get_byte[4] = { 0, };
 		get_byte[0] = ((int8*)&get_data)[0];
 		get_byte[1] = ((int8*)&get_data)[1];
 		get_byte[2] = ((int8*)&get_data)[2];
 		get_byte[3] = ((int8*)&get_data)[3];
 		get_fs.write(get_byte, 4);
-
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1243,21 +897,17 @@ void doyouknow_class::write_int32(std::ofstream& get_fs, int32 get_data) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return;
-
 }
 
 void doyouknow_class::write_float32(std::ofstream& get_fs, float get_data) {
 	try {
-
 		int8 get_byte[4] = { 0, };
 		get_byte[0] = ((int8*)&get_data)[0];
 		get_byte[1] = ((int8*)&get_data)[1];
 		get_byte[2] = ((int8*)&get_data)[2];
 		get_byte[3] = ((int8*)&get_data)[3];
 		get_fs.write(get_byte, 4);
-
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1265,20 +915,16 @@ void doyouknow_class::write_float32(std::ofstream& get_fs, float get_data) {
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return;
-
 }
 
-void doyouknow_class::write_data(std::ofstream& get_fs, void* get_buf, uint32 get_data_byte) {
+void doyouknow_class::write_data(std::ofstream& get_fs, void*& get_buf, uint32 get_data_byte) {
 	try {
-
 		int8 get_byte = 0;
 		for (uint32 idx = 0; idx < get_data_byte; idx++) {
 			get_byte = ((int8*)get_buf)[idx];
 			get_fs.write(&get_byte, 1);
 		}
-
 	}
 	catch (std::exception& e) {
 		printf("C++ Exception( std::exception ) : %s\n", e.what());
@@ -1286,7 +932,5 @@ void doyouknow_class::write_data(std::ofstream& get_fs, void* get_buf, uint32 ge
 	catch (...) {
 		printf("C++ Exception( ... ) : Not std::exception\n");
 	}
-
 	return;
-
 }
