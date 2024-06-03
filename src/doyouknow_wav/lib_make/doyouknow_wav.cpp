@@ -42,7 +42,7 @@ void doyouknow_class::func_01(void) {
 
 
 		// save test : resampling save
-		float re_target = 4000.0f;
+		float re_target = 16000.0f;
 		void* re_buf = nullptr;
 		str_uint64 re_args;
 		wav_open(file_path, wav_buf, wav_args);
