@@ -98,6 +98,36 @@ extern "C" JNIEXPORT void JNICALL Java_com_example_testapi32arm64_MainActivity_o
             opencl_lib_ptr = nullptr;
         }
 
+        int get_result = 0;
+        std::string get_info = "";
+        cl_uint opencl_platform_num = 0;
+        cl_platform_id *opencl_platform = nullptr;
+        cl_uint opencl_device_num = 0;
+        cl_device_id *opencl_device = nullptr;
+        // get count opencl-platform
+        get_result = func_clGetPlatformIDs(0, nullptr, &opencl_platform_num);
+        opencl_platform = (cl_platform_id*)std::malloc(sizeof(cl_platform_id) * opencl_platform_num);
+        // get all opencl-platform
+        get_result = func_clGetPlatformIDs(opencl_platform_num, opencl_platform, nullptr);
+        // get info opencl-platform
+        get_info += opencl_info_platform(opencl_platform, opencl_platform_num);
+        // iteration all opencl-platform
+        for (cl_uint idx_plf = 0; idx_plf < opencl_platform_num; idx_plf++) {
+            // get count opencl-device
+            get_result = func_clGetDeviceIDs(opencl_platform[idx_plf], CL_DEVICE_TYPE_ALL, 0, nullptr, &opencl_device_num);
+            opencl_device = (cl_device_id *) std::malloc( sizeof(cl_device_id) * opencl_device_num );
+            // get all opencl-device
+            get_result = func_clGetDeviceIDs(opencl_platform[idx_plf], CL_DEVICE_TYPE_ALL, opencl_device_num, opencl_device, NULL);
+            // get info opencl-device
+            get_info += opencl_info_device(opencl_device, opencl_device_num);
+        }
+        std::free(opencl_device);
+        std::free(opencl_platform);
+        opencl_device = nullptr;
+        opencl_platform = nullptr;
+
+        __android_log_print( ANDROID_LOG_INFO, "app", "  %s\n", get_info.c_str() );
+
     }
 
     return;
@@ -157,9 +187,9 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
     else{
 
         // Matrix A [ M x N ] x Matrix B [ N x K ] = Matrix C [ M x K ]
-        const int m_size = 256;
-        const int n_size = 256;
-        const int k_size = 256; // this value will be used by local_item_size.
+        int m_size = 256;
+        int n_size = 256;
+        int k_size = 256; // this value will be used by local_item_size.
 
         cl_int get_result = 0;
 
@@ -185,8 +215,8 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
             }
         }
         chrono_sec = std::chrono::duration<float>(std::chrono::steady_clock::now() - chrono_tick).count();
-        get_info += "  [ for-loop time ]\n";
-        get_info += "  Matrix A[M, N] x Matrix B[N, K] = Matrix C[M, K] : " + std::to_string(chrono_sec) + "\n";
+        get_info += "  [ openclmatul() ]\n";
+        get_info += "  for-loop time : " + std::to_string(chrono_sec) + "\n";
         ////////////////////////////////////////////////// [ for-loop ] : <--
 
         ////////////////////////////////////////////////// [ opencl ] : -->
@@ -211,8 +241,6 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
             opencl_platform = (cl_platform_id*)std::malloc(sizeof(cl_platform_id) * opencl_platform_num);
             // get all opencl-platform
             get_result = func_clGetPlatformIDs(opencl_platform_num, opencl_platform, nullptr);
-            // get info opencl-platform
-            get_info += opencl_info_platform(opencl_platform, opencl_platform_num);
 
             // iteration all opencl-platform
             for (cl_uint idx_plf = 0; idx_plf < opencl_platform_num; idx_plf++) {
@@ -222,8 +250,6 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
                 opencl_device = (cl_device_id *) std::malloc(sizeof(cl_device_id) * opencl_device_num);
                 // get all opencl-device
                 get_result = func_clGetDeviceIDs(opencl_platform[idx_plf], CL_DEVICE_TYPE_ALL, opencl_device_num, opencl_device, NULL);
-                // get info opencl-device
-                get_info += opencl_info_device(opencl_device, opencl_device_num);
 
                 // get opencl-context
                 // with all device
@@ -242,8 +268,8 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
                 // create opencl-program
                 // source   : 'opencl_src_matmul'
                 // kernel   : 'opencl_kernel_matmul'
-                // '1' mean opencl_src_matmul[1] = { "hello" }
-                // 'N' mean opencl_src_matmul[N] = { "hello", "world", ... "N" }
+                // '1' mean opencl_src_matmul[1] = { "kernel01 hello" }
+                // 'N' mean opencl_src_matmul[N] = { "kernel01 hello", "kernel02 world", ... }
                 cl_program opencl_program = func_clCreateProgramWithSource(opencl_context, 1, (const char **) &opencl_src_matmul, nullptr, &get_result);
                 std::string opencl_kernel_name = "opencl_kernel_matmul";
 
@@ -286,8 +312,8 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
                 // get_result = func_clEnqueueNDRangeKernel(opencl_queue[N], opencl_kernel, "thread dimension", "input global offset", &global_item_size, &local_item_size, "wait event number", "wait event list", &kernel_event);
                 func_clWaitForEvents(1, &kernel_event);
                 chrono_sec = std::chrono::duration<float>(std::chrono::steady_clock::now() - chrono_tick).count();
-                get_info += "  [ opencl time ]\n";
-                get_info += "  Matrix A[M, N] x Matrix B[N, K] = Matrix C[M, K] : " + std::to_string(chrono_sec) + "\n";
+                get_info += "  [ openclmatul() ]\n";
+                get_info += "  opencl time : " + std::to_string(chrono_sec) + "\n";
 
                 // copy to host
                 get_result = func_clEnqueueReadBuffer(opencl_queue[0], hwbuf_c, CL_TRUE, 0, sizeof(int) * m_size * k_size, hostbuf_d, 0, nullptr, &kernel_event);
@@ -378,7 +404,11 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
     }
     float* hostbuf_k = (float*)std::malloc( sizeof(float) * k1_size * k2_size * kc_size );
     std::memset(hostbuf_k, 0, sizeof(float) * k1_size * k2_size * kc_size);
-    for (int idx = 0; idx < k1_size * k2_size * kc_size; idx++ ) hostbuf_k[idx] = 1.0f;
+    for (int idx_kc = 0; idx_kc < kc_size; idx_kc++ ) {
+        for (int idx_k = 0; idx_k < k1_size * k2_size; idx_k++ ) {
+            hostbuf_k[idx_kc * (k1_size * k2_size) + idx_k] = idx_kc + 1.0f;
+        }
+    }
 
     // Matrix R : [ R1 x R2 x Rc ]
     int r1_size = t1_size - (k1_size - 1);
@@ -413,8 +443,8 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
         // __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : Matrix R [ %d, %d, %d ] \n", r_row, r_col, r_ch);
     }
     chrono_sec = std::chrono::duration<float>(std::chrono::steady_clock::now() - chrono_tick).count();
-    get_info += "  [ for-loop time ]\n";
-    get_info += "  openclconv2d() : " + std::to_string(chrono_sec) + "\n";
+    get_info += "  [ openclconv2d() ]\n";
+    get_info += "  for-loop time : " + std::to_string(chrono_sec) + "\n";
     ////////////////////////////////////////////////// [ for-loop ] : <--
 
     ////////////////////////////////////////////////// [ opencl ] : -->
@@ -437,13 +467,11 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
     get_result = func_clGetPlatformIDs(0, nullptr, &opencl_platform_num);
     opencl_platform = (cl_platform_id*)std::malloc(sizeof(cl_platform_id) * opencl_platform_num);
     get_result = func_clGetPlatformIDs(opencl_platform_num, opencl_platform, nullptr);
-    get_info += opencl_info_platform(opencl_platform, opencl_platform_num);
 
     for (cl_uint idx_plf = 0; idx_plf < opencl_platform_num; idx_plf++) {
         get_result = func_clGetDeviceIDs(opencl_platform[idx_plf], CL_DEVICE_TYPE_ALL, 0, nullptr, &opencl_device_num);
         opencl_device = (cl_device_id *) std::malloc(sizeof(cl_device_id) * opencl_device_num);
         get_result = func_clGetDeviceIDs(opencl_platform[idx_plf], CL_DEVICE_TYPE_ALL, opencl_device_num, opencl_device, NULL);
-        get_info += opencl_info_device(opencl_device, opencl_device_num);
         cl_context opencl_context = func_clCreateContext(nullptr, opencl_device_num, opencl_device, nullptr, nullptr, &get_result);
         cl_queue_properties opencl_queue_prop[] = {CL_QUEUE_PROPERTIES, CL_QUEUE_PROFILING_ENABLE, 0};
         opencl_queue = (cl_command_queue *) std::malloc( sizeof(cl_command_queue) * opencl_device_num);
@@ -492,8 +520,8 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
         get_result = func_clEnqueueNDRangeKernel(opencl_queue[0], opencl_kernel, 1, nullptr, &global_item_size, &local_item_size, 0, nullptr, &kernel_event);
         func_clWaitForEvents(1, &kernel_event);
         chrono_sec = std::chrono::duration<float>(std::chrono::steady_clock::now() - chrono_tick).count();
-        get_info += "  [ opencl time ]\n";
-        get_info += "  openclconv2d() : " + std::to_string(chrono_sec) + "\n";
+        get_info += "  [ openclconv2d() ]\n";
+        get_info += "  opencl time : " + std::to_string(chrono_sec) + "\n";
 
         // copy to host
         get_result = func_clEnqueueReadBuffer(opencl_queue[0], hwbuf_r, CL_TRUE, 0, sizeof(float) * r1_size * r2_size * rc_size, hostbuf_opencl, 0, nullptr, &kernel_event);
@@ -522,8 +550,12 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
     ////////////////////////////////////////////////// [ opencl ] : <--
 
     // [ Compare ]
-    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_forloop[0]: %f\n", hostbuf_forloop[0]);
-    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_opencl[0] : %f\n", hostbuf_opencl[0]);
+    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_forloop[0]: %f\n", hostbuf_forloop[0*r1_size*r2_size]);
+    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_forloop[0]: %f\n", hostbuf_forloop[1*r1_size*r2_size]);
+    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_forloop[0]: %f\n", hostbuf_forloop[2*r1_size*r2_size]);
+    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_opencl[0] : %f\n", hostbuf_opencl[0*r1_size*r2_size]);
+    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_opencl[0] : %f\n", hostbuf_opencl[1*r1_size*r2_size]);
+    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_opencl[0] : %f\n", hostbuf_opencl[2*r1_size*r2_size]);
     for (int idx_r = 0; idx_r < r1_size * r2_size * rc_size; idx_r++ ) {
         if ( hostbuf_forloop[idx_r] != hostbuf_opencl[idx_r] ){
             __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : conv2d fail !!!\n");
@@ -705,7 +737,7 @@ std::string opencl_info_build(cl_program get_program, cl_uint get_num, const cl_
         std::string get_str(get_log, get_size - 1);
 
         if ( get_size == 1 ){
-            build_info += "  CL_SUCCESS\n";
+            build_info = "";
         }
         else{
             build_info += get_str + "\n";

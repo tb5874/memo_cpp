@@ -74,7 +74,7 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 static const char *opencl_src_matmul =\
-"__kernel void opencl_kernel_matmul(__global int* mat_a, __global int* mat_b, __global int* mat_c, const int m_size, const int n_size, const int k_size) {\n"\
+"__kernel void opencl_kernel_matmul(__global int* mat_a, __global int* mat_b, __global int* mat_c, int m_size, int n_size, int k_size) {\n"\
 "    int idx = get_global_id(0);\n"\
 "    if( idx < m_size * k_size) {\n"\
 "        int get_row = idx / k_size;\n"\
