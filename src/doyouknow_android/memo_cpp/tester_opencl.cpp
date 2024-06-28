@@ -388,8 +388,8 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
 
     ////////////////////////////////////////////////// [ for-loop ] : -->
     // Matrix T : [ T1 x T2 x Tc ]
-    int t1_size = 640;
-    int t2_size = 640;
+    int t1_size = 2048;
+    int t2_size = 2048;
     int tc_size = 3;
     float* hostbuf_t = (float*)std::malloc( sizeof(float) * t1_size * t2_size * tc_size );
     std::memset(hostbuf_t, 0, sizeof(float) * t1_size * t2_size * tc_size );
@@ -406,7 +406,7 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
     std::memset(hostbuf_k, 0, sizeof(float) * k1_size * k2_size * kc_size);
     for (int idx_kc = 0; idx_kc < kc_size; idx_kc++ ) {
         for (int idx_k = 0; idx_k < k1_size * k2_size; idx_k++ ) {
-            hostbuf_k[idx_kc * (k1_size * k2_size) + idx_k] = idx_kc + 1.0f;
+            hostbuf_k[idx_kc * (k1_size * k2_size) + idx_k] = 1.0f;
         }
     }
 
@@ -422,25 +422,81 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
     for (int idx = 0; idx < r1_size * r2_size * rc_size; idx++ ) hostbuf_forloop[idx] = 0.0f;
 
     chrono_tick = std::chrono::steady_clock::now();
-    for (int idx_r = 0; idx_r < r1_size * r2_size * rc_size; idx_r++) {
-        int r_ch = idx_r / (r1_size * r2_size);
-        int r_mat = idx_r % (r1_size * r2_size);
-        int r_row = r_mat / r2_size;
-        int r_col = r_mat % r2_size;
-        float get_conv = 0.0f;
-        for (int idx_tc = 0; idx_tc < tc_size; idx_tc++) {
-            int t_pos = idx_tc * (t1_size * t2_size) + r_row * t2_size + r_col;
-            for (int idx_k = 0; idx_k < k1_size * k2_size; idx_k++) {
-                int k_ch = r_ch;
-                int k_mat = idx_k % (k1_size * k2_size);
-                int k_row = k_mat / k2_size;
-                int k_col = k_mat % k2_size;
-                int k_pos = k_ch * (k1_size * k2_size) + k_row * k2_size + k_col;
-                get_conv += hostbuf_t[t_pos + k_pos] * hostbuf_k[k_pos];
+    if(false) {
+        for (int idx_r = 0; idx_r < r1_size * r2_size * rc_size; idx_r++) {
+            float get_conv = 0.0f;
+            int r_ch = idx_r / (r1_size * r2_size);
+            int r_mat = idx_r % (r1_size * r2_size);
+            int r_row = r_mat / r2_size;
+            int r_col = r_mat % r2_size;
+            for (int idx_tc = 0; idx_tc < tc_size; idx_tc++) {
+                for (int idx_k = 0; idx_k < k1_size * k2_size; idx_k++) {
+                    int k_ch = r_ch;
+                    int k_mat = idx_k % (k1_size * k2_size);
+                    int k_row = k_mat / k2_size;
+                    int k_col = k_mat % k2_size;
+
+                    int k_cur = k_ch * (k1_size * k2_size);
+                    int k_pos = k_cur + k_row * k2_size + k_col;
+
+                    int t_cur = idx_tc * (t1_size * t2_size) + r_row * t2_size + r_col;
+                    int t_pos = t_cur + k_row * t2_size + k_col;
+
+                    get_conv += hostbuf_t[t_pos] * hostbuf_k[k_pos];
+                }
             }
+            hostbuf_forloop[idx_r] = get_conv;
+            //__android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : Matrix R (%d) [ %d, %d, %d ] \n", idx_r, r_row, r_col, r_ch);
         }
-        hostbuf_forloop[idx_r] = get_conv;
-        // __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : Matrix R [ %d, %d, %d ] \n", r_row, r_col, r_ch);
+    }
+    else if(false){
+        for (int idx_r = 0; idx_r < r1_size * r2_size * rc_size; idx_r++) {
+            int r_ch = idx_r / (r1_size * r2_size);
+            int r_mat = idx_r % (r1_size * r2_size);
+            int r_row = r_mat / r2_size;
+            int r_col = r_mat % r2_size;
+            float get_conv = 0.0f;
+            for (int idx_tc = 0; idx_tc < tc_size; idx_tc++) {
+                int t_cur = idx_tc * (t1_size * t2_size) + r_row * t2_size + r_col;
+                for (int idx_k = 0; idx_k < k1_size * k2_size; idx_k++) {
+                    int k_ch = r_ch;
+                    int k_mat = idx_k;
+                    int k_row = k_mat / k2_size;
+                    int k_col = k_mat % k2_size;
+                    int k_pos = k_ch * (k1_size * k2_size) + idx_k;
+                    int t_pos = t_cur + k_row * t2_size + k_col;
+                    get_conv += hostbuf_t[t_pos] * hostbuf_k[k_pos];
+                }
+            }
+            hostbuf_forloop[idx_r] = get_conv;
+            //__android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : Matrix R (%d) [ %d, %d, %d ] \n", idx_r, r_row, r_col, r_ch);
+        }
+    }
+    else if(true){
+        for (int idx_r = 0; idx_r < r1_size * r2_size * rc_size; idx_r++) {
+            float get_conv = 0.0f;
+            int r_ch = idx_r / (r1_size * r2_size);
+            int r_mat = idx_r % (r1_size * r2_size);
+            int r_row = r_mat / r2_size;
+            int r_col = r_mat % r2_size;
+            for (int idx_tc = 0; idx_tc < tc_size; idx_tc++) {
+                int t_cur = idx_tc * (t1_size * t2_size) + r_row * t2_size + r_col;
+                for (int idx_k = 0; idx_k < k1_size * k2_size; idx_k++) {
+                    int k_ch = r_ch;
+                    int k_mat = idx_k % (k1_size * k2_size);
+                    int k_row = k_mat / k2_size;
+                    int k_col = k_mat % k2_size;
+                    int k_pos = k_ch * (k1_size * k2_size) + idx_k;
+                    int t_pos = t_cur + k_row * t2_size + k_col;
+                    get_conv += hostbuf_t[t_pos] * hostbuf_k[k_pos];
+                }
+            }
+            hostbuf_forloop[idx_r] = get_conv;
+            //__android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : Matrix R (%d) [ %d, %d, %d ] \n", idx_r, r_row, r_col, r_ch);
+        }
+    }
+    else{
+        //
     }
     chrono_sec = std::chrono::duration<float>(std::chrono::steady_clock::now() - chrono_tick).count();
     get_info += "  [ openclconv2d() ]\n";
@@ -510,7 +566,7 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
         // 'local_item_size' based on the GPU architecture ( CL_DEVICE_MAX_WORK_GROUP_SIZE )
         // orange-pi-5 : 'local_item_size' is 1000
         size_t global_item_size = r1_size * r2_size * rc_size;
-        size_t local_item_size = r1_size;
+        size_t local_item_size = rc_size;
 
         // execute opencl kernel
         // get_result = func_clEnqueueNDRangeKernel(opencl_queue[0], opencl_kernel, "thread dimension", "input global offset", &global_item_size, &local_item_size, "wait event number", "wait event list", &kernel_event);
@@ -550,18 +606,15 @@ extern "C" JNIEXPORT jstring JNICALL Java_com_example_testapi32arm64_MainActivit
     ////////////////////////////////////////////////// [ opencl ] : <--
 
     // [ Compare ]
-    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_forloop[0]: %f\n", hostbuf_forloop[0*r1_size*r2_size]);
-    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_forloop[0]: %f\n", hostbuf_forloop[1*r1_size*r2_size]);
-    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_forloop[0]: %f\n", hostbuf_forloop[2*r1_size*r2_size]);
-    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_opencl[0] : %f\n", hostbuf_opencl[0*r1_size*r2_size]);
-    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_opencl[0] : %f\n", hostbuf_opencl[1*r1_size*r2_size]);
-    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_opencl[0] : %f\n", hostbuf_opencl[2*r1_size*r2_size]);
     for (int idx_r = 0; idx_r < r1_size * r2_size * rc_size; idx_r++ ) {
         if ( hostbuf_forloop[idx_r] != hostbuf_opencl[idx_r] ){
-            __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : conv2d fail !!!\n");
+            get_info += "  [ openclconv2d() ]\n";
+            get_info += "  compare fail !!!\n";
             break;
         };
     }
+    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_forloop[0]: %f\n", hostbuf_forloop[0]);
+    __android_log_print(ANDROID_LOG_INFO, "app", "  [ Speak c++ ] : hostbuf_opencl[0] : %f\n", hostbuf_opencl[0]);
 
     // C++ memory free
     std::free(hostbuf_t);

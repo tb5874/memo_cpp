@@ -91,21 +91,22 @@ static const char *opencl_src_matmul =\
 static const char *opencl_src_conv2d =\
 "__kernel void opencl_kernel_conv2d(__global float* mat_t, __global float* mat_k, __global float* mat_r, int r1_size, int r2_size, int rc_size, int t1_size, int t2_size, int tc_size, int k1_size, int k2_size) {\n"\
 "    int idx_r = get_global_id(0);\n"\
-"    if( idx_r < r1_size * r2_size * rc_size) {\n"\
+"    if( idx_r < r1_size * r2_size * rc_size ) {\n"\
+"        float get_conv = 0.0f;\n"\
 "        int r_ch = idx_r / (r1_size * r2_size);\n"\
 "        int r_mat = idx_r % (r1_size * r2_size);\n"\
 "        int r_row = r_mat / r2_size;\n"\
 "        int r_col = r_mat % r2_size;\n"\
-"        float get_conv = 0.0f;\n"\
 "        for (int idx_tc = 0; idx_tc < tc_size; idx_tc++) {\n"\
-"            int t_pos = idx_tc * (t1_size * t2_size) + r_row * t2_size + r_col;\n"\
+"            int t_cur = idx_tc * (t1_size * t2_size) + r_row * t2_size + r_col;\n"\
 "            for (int idx_k = 0; idx_k < k1_size * k2_size; idx_k++) {\n"\
 "                int k_ch = r_ch;\n"\
 "                int k_mat = idx_k % (k1_size * k2_size);\n"\
 "                int k_row = k_mat / k2_size;\n"\
 "                int k_col = k_mat % k2_size;\n"\
-"                int k_pos = k_ch * (k1_size * k2_size) + k_row * k2_size + k_col;\n"\
-"                get_conv += mat_t[t_pos + k_pos] * mat_k[k_pos];\n"\
+"                int k_pos = k_ch * (k1_size * k2_size) + idx_k;\n"\
+"                int t_pos = t_cur + k_row * t2_size + k_col;\n"\
+"                get_conv += mat_t[t_pos] * mat_k[k_pos];\n"\
 "            }\n"\
 "        }\n"\
 "        mat_r[idx_r] = get_conv;\n"\
